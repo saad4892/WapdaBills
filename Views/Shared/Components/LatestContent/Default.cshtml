@@ -1,0 +1,44 @@
+@model LatestContentModel
+
+@if (Model.Guides.Count > 0 || Model.Jobs.Count > 0)
+{
+    <section class="home-stories">
+        @if (Model.Guides.Count > 0)
+        {
+            <div class="story-block">
+                <div class="story-head">
+                    <h2>Guides</h2>
+                    <a href="/guides">View all</a>
+                </div>
+                <div class="card-grid">
+                    @foreach (var post in Model.Guides)
+                    {
+                        <a class="story-card" href="/guides/@post.Slug">
+                            <strong>@post.Title</strong>
+                            <span>@post.Excerpt</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+        @if (Model.Jobs.Count > 0)
+        {
+            <div class="story-block">
+                <div class="story-head">
+                    <h2>Careers</h2>
+                    <a href="/careers">View all</a>
+                </div>
+                <div class="card-grid">
+                    @foreach (var job in Model.Jobs)
+                    {
+                        <a class="story-card" href="/careers/@job.Id">
+                            <span class="pill">@job.Organization</span>
+                            <strong>@job.Title</strong>
+                            <span>@job.Summary</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+}

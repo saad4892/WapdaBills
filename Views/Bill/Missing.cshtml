@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = "Bill not found";
+}
+
+<section class="page-card">
+    <p class="eyebrow">Bill</p>
+    <h1>This bill could not be opened.</h1>
+    <p>@(ViewData["Message"] as string ?? "Check the reference number or company and try again.")</p>
+    <div class="actions">
+        <a class="btn btn-gold" asp-controller="Home" asp-action="Index">Back to search</a>
+    </div>
+</section>

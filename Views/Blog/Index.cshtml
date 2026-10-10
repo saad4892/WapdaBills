@@ -1,0 +1,25 @@
+@model IReadOnlyList<BlogPost>
+@{
+    ViewData["Title"] = "Electricity bill guides for Pakistan";
+}
+
+<section class="page-intro">
+    <p class="eyebrow">Guides</p>
+    <h1>Notes on bills, companies, and careers</h1>
+    <p>Practical reading for a Pakistan electricity bill: the reference number, the company that owns it, and how recruitment notices should look.</p>
+</section>
+
+<div class="card-grid">
+    @foreach (var post in Model)
+    {
+        <a class="story-card" href="/guides/@post.Slug">
+            @if (!string.IsNullOrWhiteSpace(post.ImagePath))
+            {
+                <img src="@post.ImagePath" alt="" />
+            }
+            <span class="pill">@post.PublishedAt.ToString("d MMM yyyy")</span>
+            <strong>@post.Title</strong>
+            <span>@post.Excerpt</span>
+        </a>
+    }
+</div>

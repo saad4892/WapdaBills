@@ -1,0 +1,54 @@
+@model JobListing
+
+<section class="page-card admin-card">
+    <p class="eyebrow">Career notice</p>
+    <h1>@(Model.Id == 0 ? "New notice" : "Edit notice")</h1>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert" asp-validation-summary="All"></div>
+    }
+    <form method="post" enctype="multipart/form-data" action="/admin/careers/edit">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImagePath" />
+        <label class="field-label" asp-for="Title"></label>
+        <input class="number" asp-for="Title" />
+        <label class="field-label" asp-for="Organization"></label>
+        <input class="number" asp-for="Organization" />
+        <label class="field-label" asp-for="Location"></label>
+        <input class="number" asp-for="Location" />
+        <label class="field-label" asp-for="EmploymentType">Label</label>
+        <input class="number" asp-for="EmploymentType" />
+        <label class="field-label" asp-for="Summary"></label>
+        <textarea class="number text-area" asp-for="Summary" rows="3"></textarea>
+        <label class="field-label" asp-for="Body"></label>
+        <textarea class="number text-area" asp-for="Body" rows="12"></textarea>
+        <label class="field-label" asp-for="ApplyUrl">Official link</label>
+        <input class="number" asp-for="ApplyUrl" placeholder="https://" />
+        <label class="field-label" asp-for="Deadline">Closing date</label>
+        <input class="number" asp-for="Deadline" type="date" />
+        <label class="field-label" asp-for="MetaDescription">Search description</label>
+        <textarea class="number text-area" asp-for="MetaDescription" rows="3"></textarea>
+        <label class="field-label" asp-for="MetaKeywords">Keywords</label>
+        <input class="number" asp-for="MetaKeywords" />
+        <label class="field-label" for="cover">Image</label>
+        <input id="cover" name="cover" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+        {
+            <label class="check-line"><input type="checkbox" name="removeImage" value="true" /> Remove current image</label>
+            <img class="admin-thumb" src="@Model.ImagePath" alt="" />
+        }
+        <label class="check-line"><input asp-for="IsPublished" /> Published</label>
+        <div class="actions">
+            <button class="btn btn-gold" type="submit">Save notice</button>
+            <a class="btn btn-ghost" href="/admin/careers">Cancel</a>
+        </div>
+    </form>
+    @if (Model.Id != 0)
+    {
+        <form method="post" action="/admin/careers/delete/@Model.Id" class="danger-form">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-ghost" type="submit">Delete notice</button>
+        </form>
+    }
+</section>

@@ -1,0 +1,70 @@
+@model BillFetchResult
+@{
+    ViewData["Title"] = $"{Model.Company?.ShortName} bill";
+    var within = string.IsNullOrWhiteSpace(Model.Summary.PayableWithin) ? "—" : "Rs " + Model.Summary.PayableWithin;
+    var after = string.IsNullOrWhiteSpace(Model.Summary.PayableAfter) ? "—" : "Rs " + Model.Summary.PayableAfter;
+    var code = Model.RuUsed == "R" ? "R" : "U";
+}
+
+<section class="result-head">
+    <div class="result-bar">
+        <a class="back" asp-controller="Home" asp-action="Index">New search</a>
+        <button class="btn btn-dark" id="print-bill" type="button">Print</button>
+    </div>
+    <p class="eyebrow">@Model.Company?.ShortName</p>
+    <h1>@(string.IsNullOrWhiteSpace(Model.Summary.Name) ? Model.Company?.FullName : Model.Summary.Name)</h1>
+    <p class="result-meta">@Model.Company?.FullName · @code · @Model.Summary.BillMonth</p>
+</section>
+
+<dl class="stats">
+    <div>
+        <dt>Reference</dt>
+        <dd>@(string.IsNullOrWhiteSpace(Model.Summary.Reference) ? Model.Number : Model.Summary.Reference)</dd>
+    </div>
+    <div>
+        <dt>Customer ID</dt>
+        <dd>@(string.IsNullOrWhiteSpace(Model.Summary.ConsumerId) ? "—" : Model.Summary.ConsumerId)</dd>
+    </div>
+    <div>
+        <dt>Due date</dt>
+        <dd>@(string.IsNullOrWhiteSpace(Model.Summary.DueDate) ? "—" : Model.Summary.DueDate)</dd>
+    </div>
+    <div>
+        <dt>Units</dt>
+        <dd>@(string.IsNullOrWhiteSpace(Model.Summary.Units) ? "—" : Model.Summary.Units)</dd>
+    </div>
+    <div class="stat-strong">
+        <dt>Within due date</dt>
+        <dd>@within</dd>
+    </div>
+    <div>
+        <dt>After due date</dt>
+        <dd>@after</dd>
+    </div>
+</dl>
+
+<div class="bill-shell">
+    <p class="bill-loading" id="bill-loading">Loading the official bill...</p>
+    <iframe id="bill-frame"
+            title="Duplicate electricity bill"
+            src="@Url.Action("Document", "Bill", new { company = Model.Company?.Code, number = Model.Number, by = Model.SearchBy, ru = Model.RuUsed })"></iframe>
+</div>
+
+@section Scripts {
+    <script>
+        const frame = document.getElementById("bill-frame");
+        const loading = document.getElementById("bill-loading");
+        const hideLoading = () => { loading.hidden = true; };
+        if (frame.contentDocument && frame.contentDocument.readyState === "complete") hideLoading();
+        frame.addEventListener("load", hideLoading);
+        window.addEventListener("message", (event) => {
+            if (event.origin !== location.origin) return;
+            if (!event.data || event.data.source !== "wapda-bill") return;
+            frame.style.height = (event.data.height + 32) + "px";
+        });
+        document.getElementById("print-bill").addEventListener("click", () => {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+        });
+    </script>
+}

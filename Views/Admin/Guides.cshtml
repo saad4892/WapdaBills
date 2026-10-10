@@ -1,0 +1,24 @@
+@model IReadOnlyList<BlogPost>
+
+<section class="page-intro">
+    <div class="story-head">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Guides</h1>
+        </div>
+        <a class="btn btn-gold" href="/admin/guides/edit">New guide</a>
+    </div>
+</section>
+
+<div class="admin-table">
+    @foreach (var post in Model)
+    {
+        <div class="admin-row">
+            <div>
+                <strong>@post.Title</strong>
+                <span>@(post.IsPublished ? "Published" : "Hidden") · /guides/@post.Slug</span>
+            </div>
+            <a href="/admin/guides/edit/@post.Id">Edit</a>
+        </div>
+    }
+</div>

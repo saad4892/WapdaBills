@@ -1,0 +1,21 @@
+@model JobListing
+
+<article class="article">
+    <p class="eyebrow">@Model.EmploymentType</p>
+    <h1>@Model.Title</h1>
+    <p class="result-meta">@Model.Organization · @Model.Location@(Model.Deadline is null ? "" : " · closes " + Model.Deadline.Value.ToString("d MMM yyyy"))</p>
+    @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+    {
+        <img class="article-cover" src="@Model.ImagePath" alt="" />
+    }
+    <div class="article-body">
+        @Html.Raw(PlainText.ToHtml(Model.Body))
+    </div>
+    <div class="actions">
+        @if (!string.IsNullOrWhiteSpace(Model.ApplyUrl))
+        {
+            <a class="btn btn-gold" href="@Model.ApplyUrl" target="_blank" rel="noopener">Open the listed link</a>
+        }
+        <a class="btn btn-ghost" href="/careers">All career notices</a>
+    </div>
+</article>

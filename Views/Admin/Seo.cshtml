@@ -1,0 +1,25 @@
+@model SiteSetting
+
+<section class="page-card admin-card">
+    <p class="eyebrow">Search</p>
+    <h1>Home page listing</h1>
+    <p>These fields are the title, description, and keywords search engines read on the home page.</p>
+    @if (TempData["Saved"] is string saved)
+    {
+        <div class="saved" role="status">@saved</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert" asp-validation-summary="All"></div>
+    }
+    <form method="post" action="/admin/seo">
+        @Html.AntiForgeryToken()
+        <label class="field-label" asp-for="SiteTitle">Title</label>
+        <input class="number" asp-for="SiteTitle" />
+        <label class="field-label" asp-for="MetaDescription">Description</label>
+        <textarea class="number text-area" asp-for="MetaDescription" rows="4"></textarea>
+        <label class="field-label" asp-for="MetaKeywords">Keywords</label>
+        <textarea class="number text-area" asp-for="MetaKeywords" rows="3"></textarea>
+        <button class="btn btn-gold" type="submit">Save listing</button>
+    </form>
+</section>

@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] ?? "WAPDA Bills")</title>
+    <meta name="description" content="@(ViewData["Description"] ?? "Check electricity bills for every WAPDA distribution company in Pakistan.")" />
+    <meta name="keywords" content="@(ViewData["Keywords"] ?? "Pakistan electricity bill, LESCO, MEPCO, FESCO, WAPDA")" />
+    @if (Context.Request.Path.StartsWithSegments("/admin"))
+    {
+        <meta name="robots" content="noindex, nofollow" />
+    }
+    else
+    {
+        <meta name="robots" content="index, follow" />
+    }
+    <meta property="og:title" content="@(ViewData["Title"] ?? "WAPDA Bills")" />
+    <meta property="og:description" content="@(ViewData["Description"] ?? "Check electricity bills for every WAPDA distribution company in Pakistan.")" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_PK" />
+    <meta property="og:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="admin-strip">
+            <div class="strip-inner">
+                <span>Admin</span>
+                <a href="/admin">Desk</a>
+                <a href="/admin/guides">Guides</a>
+                <a href="/admin/careers">Careers</a>
+                <a href="/admin/seo">Search</a>
+                <form method="post" action="/admin/logout">
+                    @Html.AntiForgeryToken()
+                    <button type="submit">Log out</button>
+                </form>
+            </div>
+        </div>
+    }
+    <header class="topbar">
+        <div class="top">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <span class="mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M13 2 3.8 13.6h7.1L10 22l10.2-12.2h-7.2L13 2z"/></svg>
+                </span>
+                <span>
+                    <strong>WAPDA Bills</strong>
+                    <small>Pakistan electricity lookup</small>
+                </span>
+            </a>
+            <nav class="nav">
+                <a class="@(Context.Request.Path == "/" ? "is-on" : null)" href="/">Bill Check</a>
+                <a class="@(Context.Request.Path.StartsWithSegments("/find-number") ? "is-on" : null)" href="/find-number">Find Number</a>
+                <a class="@(Context.Request.Path.StartsWithSegments("/resources") ? "is-on" : null)" href="/resources">Resources</a>
+                <a class="@(Context.Request.Path.StartsWithSegments("/guides") ? "is-on" : null)" href="/guides">Guides</a>
+                <a class="@(Context.Request.Path.StartsWithSegments("/faqs") ? "is-on" : null)" href="/faqs">FAQs</a>
+                <a class="@(Context.Request.Path.StartsWithSegments("/offices") ? "is-on" : null)" href="/offices">Offices</a>
+                <a class="@(Context.Request.Path.StartsWithSegments("/careers") ? "is-on" : null)" href="/careers">Careers</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer class="footbar">
+        <div class="foot">
+            <nav class="nav">
+                <a href="/">Bill Check</a>
+                <a href="/find-number">Find Number</a>
+                <a href="/resources">Resources</a>
+                <a href="/guides">Guides</a>
+                <a href="/faqs">FAQs</a>
+                <a href="/offices">Offices</a>
+                <a href="/careers">Careers</a>
+                <a href="/admin">Admin</a>
+            </nav>
+            <p>WAPDA Bills</p>
+        </div>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

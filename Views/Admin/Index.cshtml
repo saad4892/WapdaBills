@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<section class="page-intro">
+    <p class="eyebrow">Admin</p>
+    <h1>Content desk</h1>
+    <p>Publish guides, career notices, and the search description that appears on the home page.</p>
+</section>
+
+<div class="card-grid">
+    <a class="story-card" href="/admin/guides">
+        <span class="pill">@ViewBag.Guides guides</span>
+        <strong>Guides</strong>
+        <span>Write and publish bill articles.</span>
+    </a>
+    <a class="story-card" href="/admin/careers">
+        <span class="pill">@ViewBag.Jobs notices</span>
+        <strong>Careers</strong>
+        <span>Add recruitment notices and official links.</span>
+    </a>
+    <a class="story-card" href="/admin/seo">
+        <span class="pill">Home page</span>
+        <strong>Search listing</strong>
+        <span>Edit the title, description, and keywords.</span>
+    </a>
+</div>

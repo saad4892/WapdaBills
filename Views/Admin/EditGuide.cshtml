@@ -1,0 +1,47 @@
+@model BlogPost
+
+<section class="page-card admin-card">
+    <p class="eyebrow">Guide</p>
+    <h1>@(Model.Id == 0 ? "New guide" : "Edit guide")</h1>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert" asp-validation-summary="All"></div>
+    }
+        <form method="post" enctype="multipart/form-data" action="/admin/guides/edit">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImagePath" />
+        <label class="field-label" asp-for="Title"></label>
+        <input class="number" asp-for="Title" />
+        <label class="field-label" asp-for="Slug">Address</label>
+        <input class="number" asp-for="Slug" placeholder="Filled from the title if left blank" />
+        <label class="field-label" asp-for="Excerpt"></label>
+        <textarea class="number text-area" asp-for="Excerpt" rows="3"></textarea>
+        <label class="field-label" asp-for="Body"></label>
+        <textarea class="number text-area" asp-for="Body" rows="14"></textarea>
+        <p class="hint">Separate paragraphs with a blank line. Start a line with ## for a heading, or - for a bullet.</p>
+        <label class="field-label" asp-for="MetaDescription">Search description</label>
+        <textarea class="number text-area" asp-for="MetaDescription" rows="3"></textarea>
+        <label class="field-label" asp-for="MetaKeywords">Keywords</label>
+        <input class="number" asp-for="MetaKeywords" />
+        <label class="field-label" for="cover">Image</label>
+        <input id="cover" name="cover" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+        {
+            <label class="check-line"><input type="checkbox" name="removeImage" value="true" /> Remove current image</label>
+            <img class="admin-thumb" src="@Model.ImagePath" alt="" />
+        }
+        <label class="check-line"><input asp-for="IsPublished" /> Published</label>
+        <div class="actions">
+            <button class="btn btn-gold" type="submit">Save guide</button>
+            <a class="btn btn-ghost" href="/admin/guides">Cancel</a>
+        </div>
+    </form>
+    @if (Model.Id != 0)
+    {
+        <form method="post" action="/admin/guides/delete/@Model.Id" class="danger-form">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-ghost" type="submit">Delete guide</button>
+        </form>
+    }
+</section>

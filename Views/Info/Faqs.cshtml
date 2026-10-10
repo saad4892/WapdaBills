@@ -1,0 +1,17 @@
+@model IReadOnlyList<FaqItem>
+
+<section class="page-intro">
+    <p class="eyebrow">FAQs</p>
+    <h1>Frequently asked questions</h1>
+    <p>Short answers before you search a reference number.</p>
+</section>
+
+<div class="faq-list">
+    @foreach (var item in Model)
+    {
+        <details class="faq">
+            <summary>@item.Question</summary>
+            <p>@item.Answer</p>
+        </details>
+    }
+</div>

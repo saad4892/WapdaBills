@@ -1,0 +1,17 @@
+@model IReadOnlyList<ResourceLink>
+
+<section class="page-intro">
+    <p class="eyebrow">Resources</p>
+    <h1>Useful electricity resources</h1>
+    <p>Everything on this site for checking a bill, reading the reference number, and finding the right company.</p>
+</section>
+
+<div class="card-grid">
+    @foreach (var item in Model)
+    {
+        <a class="story-card" href="@item.Href">
+            <strong>@item.Title</strong>
+            <span>@item.Detail</span>
+        </a>
+    }
+</div>

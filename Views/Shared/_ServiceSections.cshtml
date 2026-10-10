@@ -1,0 +1,60 @@
+<section class="service-band" id="find-number">
+    <div class="story-head">
+        <h2>Finding your reference number</h2>
+        <a href="/find-number">Full steps</a>
+    </div>
+    <ol class="steps steps-grid">
+        <li><strong>14 digits</strong><span>Top left of the bill. Do not type the letter into this box.</span></li>
+        <li><strong>U or R</strong><span>Select the letter printed after the number.</span></li>
+        <li><strong>Customer ID</strong><span>Use this only when the bill shows that shorter number.</span></li>
+    </ol>
+</section>
+
+<section class="service-band">
+    <div class="story-head">
+        <h2>Useful resources</h2>
+        <a href="/resources">All resources</a>
+    </div>
+    <div class="card-grid">
+        @foreach (var item in SiteContent.Resources.Take(4))
+        {
+            <a class="story-card" href="@item.Href">
+                <strong>@item.Title</strong>
+                <span>@item.Detail</span>
+            </a>
+        }
+    </div>
+</section>
+
+<section class="service-band" id="faqs">
+    <div class="story-head">
+        <h2>Frequently asked questions</h2>
+        <a href="/faqs">All questions</a>
+    </div>
+    <div class="faq-list">
+        @foreach (var item in SiteContent.Faqs.Take(4))
+        {
+            <details class="faq">
+                <summary>@item.Question</summary>
+                <p>@item.Answer</p>
+            </details>
+        }
+    </div>
+</section>
+
+<section class="service-band" id="offices">
+    <div class="story-head">
+        <h2>Office locations</h2>
+        <a href="/offices">All offices</a>
+    </div>
+    <div class="card-grid">
+        @foreach (var company in DiscoCatalog.All.Take(6))
+        {
+            <a class="story-card" href="/offices">
+                <span class="pill">@SiteContent.Headquarters(company.Code)</span>
+                <strong>@company.ShortName</strong>
+                <span>@company.Coverage</span>
+            </a>
+        }
+    </div>
+</section>

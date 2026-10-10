@@ -1,0 +1,15 @@
+@model DiscoCompany
+@{
+    ViewData["Title"] = "K-Electric";
+}
+
+<section class="panel page-card">
+    <p class="eyebrow">Sindh · Karachi</p>
+    <h1>K-Electric is not on the PITC portal.</h1>
+    <p>@Model.Note Use the 13-digit account number on the official K-Electric website to view a digital bill.</p>
+    <div class="actions">
+        <a class="btn btn-gold" href="@Model.ExternalUrl" target="_blank" rel="noopener">Open K-Electric bills</a>
+        <a class="btn btn-dark" href="https://ke.com.pk/know-your-bill/" target="_blank" rel="noopener">Find the account number</a>
+        <a class="btn btn-ghost" asp-controller="Home" asp-action="Index">Back to companies</a>
+    </div>
+</section>

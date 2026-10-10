@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Admin login";
+}
+
+<section class="page-card admin-card">
+    <p class="eyebrow">Admin</p>
+    <h1>Sign in</h1>
+    @if (ViewData["Error"] is string error)
+    {
+        <div class="alert" role="alert">@error</div>
+    }
+    <form method="post" action="/admin/login">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+        <label class="field-label" for="username">Username</label>
+        <input class="number" id="username" name="username" autocomplete="username" />
+        <label class="field-label" for="password">Password</label>
+        <input class="number" id="password" name="password" type="password" autocomplete="current-password" />
+        <button class="btn btn-gold" type="submit">Sign in</button>
+    </form>
+</section>

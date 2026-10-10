@@ -1,0 +1,15 @@
+@model BlogPost
+
+<article class="article">
+    <p class="eyebrow">Guide</p>
+    <h1>@Model.Title</h1>
+    <p class="result-meta">@Model.PublishedAt.ToString("d MMMM yyyy")</p>
+    @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+    {
+        <img class="article-cover" src="@Model.ImagePath" alt="" />
+    }
+    <div class="article-body">
+        @Html.Raw(PlainText.ToHtml(Model.Body))
+    </div>
+    <p><a class="back" href="/guides">All guides</a></p>
+</article>

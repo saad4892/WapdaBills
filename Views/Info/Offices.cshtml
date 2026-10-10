@@ -1,0 +1,25 @@
+@model IReadOnlyList<DiscoCompany>
+
+<section class="page-intro">
+    <p class="eyebrow">Offices</p>
+    <h1>Company offices by region</h1>
+    <p>Each bill names the subdivision office that serves that meter. The list below is the headquarters city and the area the company covers.</p>
+</section>
+
+@foreach (var region in DiscoCatalog.Regions)
+{
+    <section class="office-region">
+        <h2>@region.Label</h2>
+        <div class="card-grid">
+            @foreach (var company in Model.Where(company => company.Regions.Contains(region.Key)))
+            {
+                <article class="story-card office-card">
+                    <span class="pill">@SiteContent.Headquarters(company.Code)</span>
+                    <strong>@company.ShortName</strong>
+                    <span>@company.FullName</span>
+                    <span>@company.Coverage</span>
+                </article>
+            }
+        </div>
+    </section>
+}
