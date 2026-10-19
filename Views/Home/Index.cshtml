@@ -1,62 +1,124 @@
 ﻿@model LookupForm
+@using System.Text.Json
 @{
-    var activeRegion = DiscoCatalog.Regions.FirstOrDefault(region => region.Key == Model.Region) ?? DiscoCatalog.Regions[0];
-    Model.Region = activeRegion.Key;
-}
-
-<section class="hero">
-    <p class="eyebrow">11 distribution companies</p>
-    <h1>Check an electricity bill</h1>
-    <p>Choose a region and a company, then enter the reference number. The latest duplicate bill opens here from the official record.</p>
-    <p class="hero-links"><a href="/find-number">Find number</a><a href="/resources">Resources</a><a href="/faqs">FAQs</a></p>
-</section>
-
-<form id="bill-form" class="desk" asp-controller="Bill" asp-action="Open" method="post">
-    <input type="hidden" asp-for="Region" id="Region" />
-
-    <div class="region-row" role="group" aria-label="Region">
-        @foreach (var region in DiscoCatalog.Regions)
-        {
-            var count = DiscoCatalog.All.Count(company => company.Regions.Contains(region.Key));
-            <button type="button"
-                    class="region-btn @(Model.Region == region.Key ? "is-on" : "")"
-                    data-region-btn="@region.Key"
-                    aria-pressed="@(Model.Region == region.Key ? "true" : "false")">
-                <span>@region.Label</span>
-                <small>@count</small>
-            </button>
-        }
-    </div>
-    <p class="region-detail" id="region-detail">
-        @(DiscoCatalog.Regions.First(region => region.Key == Model.Region).Detail)
-    </p>
-
-    @foreach (var region in DiscoCatalog.Regions)
+    var selectedCompany = DiscoCatalog.Find(Model.Company);
+    if (selectedCompany is not null)
     {
-        <section class="region-block @(Model.Region == region.Key ? "" : "is-out")" data-region-panel="@region.Key" data-detail="@region.Detail">
-            <div class="company-grid">
-                @foreach (var company in DiscoCatalog.All.Where(company => company.Regions.Contains(region.Key)))
-                {
-                    var selected = Model.Company == company.Code && Model.Region == region.Key;
-                    <label class="company-card" style="--accent:@company.Color">
-                        <input type="radio" name="Company" value="@company.Code" @(selected ? "checked" : "") data-pitc="@(company.UsesPitc ? "true" : "false")" data-short="@company.ShortName" data-name="@company.FullName" />
-                        <span class="company-top">
-                            <span class="company-code">@company.ShortName</span>
-                            <span class="pill">@(company.UsesPitc ? "PITC" : "Separate portal")</span>
-                        </span>
-                        <span class="company-name">@company.FullName</span>
-                        <span class="company-coverage">@company.Coverage</span>
-                    </label>
-                }
-            </div>
-        </section>
+        Model.Region = selectedCompany.Regions.Contains(Model.Region)
+            ? Model.Region
+            : selectedCompany.Regions[0];
     }
 
-    <section class="lookup" id="lookup-panel">
+    var faqLd = new
+    {
+        context = "https://schema.org",
+        type = "FAQPage",
+        mainEntity = SiteContent.HomeFaqs.Select(item => new
+        {
+            type = "Question",
+            name = item.Question,
+            acceptedAnswer = new
+            {
+                type = "Answer",
+                text = item.Answer
+            }
+        }).ToArray()
+    };
+    var faqJson = JsonSerializer.Serialize(faqLd, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    }).Replace("\"context\"", "\"@context\"", StringComparison.Ordinal)
+      .Replace("\"type\"", "\"@type\"", StringComparison.Ordinal);
+}
+
+<section class="home-hero" aria-labelledby="home-h1">
+    <p class="eyebrow">Free duplicate bill checker</p>
+    <h1 id="home-h1">Check Electricity Bill Online in Pakistan</h1>
+    <p class="home-hero__lead">
+        Fast, free, live duplicate bills for LESCO, MEPCO, IESCO, K-Electric, FESCO, PESCO, GEPCO, HESCO, SEPCO, and QESCO — plus HAZECO and TESCO.
+    </p>
+
+    <form id="bill-form" class="bill-tool" asp-controller="Bill" asp-action="Open" method="post" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Region" id="Region" />
+        <input type="hidden" name="SearchBy" id="SearchBy" value="@(Model.SearchBy == "appno" ? "appno" : "refno")" />
+
         @if (!string.IsNullOrWhiteSpace(Model.Error))
         {
             <div class="alert" role="alert">@Model.Error</div>
         }
+
+        <div class="bill-tool__grid">
+            <div class="bill-tool__field bill-tool__company">
+                <label class="field-label" for="Company">Distribution company</label>
+                <select class="bill-select" id="Company" name="Company" required
+                        data-company-select
+                        aria-describedby="company-help">
+                    <option value="">Select provider</option>
+                    @foreach (var company in DiscoCatalog.All)
+                    {
+                        var isSelected = string.Equals(Model.Company, company.Code, StringComparison.OrdinalIgnoreCase);
+                        if (isSelected)
+                        {
+                            <option value="@company.Code"
+                                    data-region="@company.Regions[0]"
+                                    data-pitc="@(company.UsesPitc ? "true" : "false")"
+                                    data-short="@company.ShortName"
+                                    selected>
+                                @company.ShortName — @SiteContent.Headquarters(company.Code)
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@company.Code"
+                                    data-region="@company.Regions[0]"
+                                    data-pitc="@(company.UsesPitc ? "true" : "false")"
+                                    data-short="@company.ShortName">
+                                @company.ShortName — @SiteContent.Headquarters(company.Code)
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="bill-tool__field bill-tool__number" id="pitc-fields">
+                <label class="field-label" for="Number">Reference number or consumer ID</label>
+                <input class="number bill-number"
+                       id="Number"
+                       name="Number"
+                       value="@Model.Number"
+                       inputmode="numeric"
+                       autocomplete="off"
+                       maxlength="18"
+                       placeholder="Enter 14-Digit Reference Number or 10-Digit Consumer ID"
+                       aria-describedby="number-help" />
+            </div>
+
+            <div class="bill-tool__action">
+                <span class="field-label bill-tool__action-label" aria-hidden="true">&nbsp;</span>
+                <button class="btn btn-gold bill-submit" id="open-bill" type="submit">Check Bill</button>
+            </div>
+
+            <p class="field-hint bill-tool__company-hint" id="company-help">Choose the company printed on your bill.</p>
+
+            <div class="bill-tool__meta" id="pitc-meta">
+                <div class="ru-row" id="ru-row">
+                    <span>Code</span>
+                    <label><input type="radio" name="Ru" value="" @(Model.Ru != "R" ? "checked" : "") /> U</label>
+                    <label><input type="radio" name="Ru" value="R" @(Model.Ru == "R" ? "checked" : "") /> R</label>
+                </div>
+                <button type="button"
+                        class="text-link"
+                        id="ref-help-open"
+                        aria-haspopup="dialog"
+                        aria-controls="ref-help-modal"
+                        aria-describedby="number-help">
+                    Where can I find my reference number?
+                </button>
+                <span class="visually-hidden" id="number-help">Enter the 14-digit reference number or consumer ID from your bill.</span>
+            </div>
+        </div>
 
         <div id="ke-note" class="ke-note" hidden>
             <h2>K-Electric uses a separate system</h2>
@@ -64,32 +126,73 @@
             <a class="btn btn-dark" href="https://ke.com.pk/bills-e-payments/" target="_blank" rel="noopener">Open K-Electric bills</a>
         </div>
 
-        <div id="pitc-fields">
-            <div class="lookup-head">
-                <h2 id="selected-company">Reference number</h2>
-                <p>The 14-digit reference number is at the top left of the bill, followed by U or R.</p>
-            </div>
+        <p class="hint bill-tool__hint">Fetching a bill can take 10–20 seconds. If U does not match, R is tried automatically.</p>
+    </form>
+</section>
 
-            <div class="search-by">
-                <label><input type="radio" name="SearchBy" value="refno" @(Model.SearchBy != "appno" ? "checked" : "") /> Reference number</label>
-                <label><input type="radio" name="SearchBy" value="appno" @(Model.SearchBy == "appno" ? "checked" : "") /> Customer ID</label>
-            </div>
+<div class="ad-slot" aria-hidden="true"></div>
 
-            <label class="field-label" for="Number">Number</label>
-            <input class="number" id="Number" name="Number" value="@Model.Number" inputmode="numeric" autocomplete="off" maxlength="18" placeholder="14 digit reference number" />
+<section class="disco-hub" aria-labelledby="disco-hub-title">
+    <div class="story-head">
+        <h2 id="disco-hub-title">Select Your Electricity Distribution Company (DISCO)</h2>
+    </div>
+    <div class="disco-hub__grid">
+        @foreach (var company in DiscoCatalog.All)
+        {
+            var landing = SiteNav.DiscoLandings.FirstOrDefault(x => x.CompanyCode == company.Code);
+            var href = landing?.Href ?? SiteNav.CheckerUrl(company.Code, company.Regions[0]);
+            var city = SiteContent.Headquarters(company.Code);
+            <article class="disco-card" style="--accent:@company.Color">
+                <a class="disco-card__main" href="@href">
+                    <span class="disco-mono" aria-hidden="true">@company.ShortName[0]</span>
+                    <span class="disco-card__text">
+                        <strong>@company.ShortName</strong>
+                        <span>@city</span>
+                    </span>
+                </a>
+                <a class="disco-card__check" href="@SiteNav.CheckerUrl(company.Code, company.Regions[0])#bill-form">Check bill</a>
+            </article>
+        }
+        @{
+            var ajked = SiteNav.DiscoLandings.First(x => x.Href == "/ajked-bill");
+        }
+        <article class="disco-card" style="--accent:#0f6e56">
+            <a class="disco-card__main" href="@ajked.Href">
+                <span class="disco-mono" aria-hidden="true">A</span>
+                <span class="disco-card__text">
+                    <strong>AJKED</strong>
+                    <span>Azad Kashmir</span>
+                </span>
+            </a>
+            <a class="disco-card__check" href="@ajked.Href">Learn more</a>
+        </article>
+    </div>
+</section>
 
-            <div class="ru-row" id="ru-row">
-                <span>Code</span>
-                <label><input type="radio" name="Ru" value="" @(Model.Ru != "R" ? "checked" : "") /> U</label>
-                <label><input type="radio" name="Ru" value="R" @(Model.Ru == "R" ? "checked" : "") /> R</label>
-            </div>
+<div class="ad-slot" aria-hidden="true"></div>
 
-            <button class="btn btn-gold" id="open-bill" type="submit">Open bill</button>
-            <p class="hint">Fetching a bill can take 10–20 seconds. If U does not match, R is tried automatically.</p>
-        </div>
-    </section>
-</form>
-
-@await Html.PartialAsync("_ServiceSections")
+@await Html.PartialAsync("_HomeSections")
 
 @await Component.InvokeAsync("LatestContent")
+
+<dialog class="ref-modal" id="ref-help-modal" aria-labelledby="ref-help-title">
+    <div class="ref-modal__inner">
+        <header class="ref-modal__head">
+            <h2 id="ref-help-title">Find your reference number</h2>
+            <button type="button" class="drawer-close" id="ref-help-close" aria-label="Close">×</button>
+        </header>
+        <ol class="steps">
+            <li><strong>14 digits</strong><span>Top left of the paper bill. Do not type the U or R letter into the number box.</span></li>
+            <li><strong>U or R</strong><span>Select the letter printed after the digits. If unclear, leave U selected.</span></li>
+            <li><strong>Consumer ID</strong><span>If you only have the shorter customer ID, enter those digits instead.</span></li>
+        </ol>
+        <div class="actions">
+            <a class="btn btn-gold" href="/how-to-check-bill">Full guide</a>
+            <button type="button" class="btn btn-ghost" id="ref-help-dismiss">Got it</button>
+        </div>
+    </div>
+</dialog>
+
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(faqJson)
+@Html.Raw("</script>")

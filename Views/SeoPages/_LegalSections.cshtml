@@ -1,0 +1,22 @@
+@model IReadOnlyList<LegalSection>
+<div class="legal-prose">
+    @foreach (var block in Model)
+    {
+        <section class="legal-section">
+            <h2>@block.Heading</h2>
+            @foreach (var paragraph in block.Paragraphs)
+            {
+                <p>@paragraph</p>
+            }
+            @if (block.Bullets is { Count: > 0 })
+            {
+                <ul>
+                    @foreach (var bullet in block.Bullets)
+                    {
+                        <li>@bullet</li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</div>

@@ -1,0 +1,19 @@
+@model (string Heading, string[] Steps)
+
+<section class="page-intro seo-landing">
+    <p class="eyebrow">Guides &amp; support</p>
+    <h1>@Model.Heading</h1>
+</section>
+
+<ol class="steps">
+    @foreach (var step in Model.Steps)
+    {
+        <li><span>@step</span></li>
+    }
+</ol>
+
+<div class="actions">
+    <a class="btn btn-gold" href="/">Check bill</a>
+    <a class="btn btn-ghost" href="/how-to-check-bill">Find reference number</a>
+    <a class="btn btn-ghost" href="/offices">Offices</a>
+</div>

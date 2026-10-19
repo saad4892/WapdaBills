@@ -1,0 +1,40 @@
+@{
+    var link = (NavLink)ViewData["NavLink"]!;
+    var company = ViewData["Company"] as DiscoCompany;
+    var checkerUrl = (string)ViewData["CheckerUrl"]!;
+}
+
+<section class="page-intro seo-landing">
+    <p class="eyebrow">DISCO bill checker</p>
+    <h1>@link.Title</h1>
+    <p>@(company?.FullName ?? link.Title). @(link.Description).</p>
+    @if (company is not null)
+    {
+        <p class="seo-coverage"><strong>Coverage:</strong> @company.Coverage</p>
+    }
+    else
+    {
+        <p class="seo-coverage">AJKED bills are issued outside the standard WAPDA/PITC duplicate-bill flow used by mainland DISCOs. Use official AJK electricity channels for account and payment questions, then return here for other Pakistan DISCOs.</p>
+    }
+    <div class="actions">
+        @if (!string.IsNullOrWhiteSpace(checkerUrl) && company is not null)
+        {
+            <a class="btn btn-gold" href="@checkerUrl">Check @company.ShortName bill</a>
+        }
+        else
+        {
+            <a class="btn btn-gold" href="/">Open bill checker</a>
+        }
+        <a class="btn btn-ghost" href="/how-to-check-bill">Find reference number</a>
+    </div>
+</section>
+
+<section class="seo-related">
+    <h2>Related DISCOs</h2>
+    <ul class="seo-link-list">
+        @foreach (var item in SiteNav.DiscoLandings.Where(x => x.Href != link.Href).Take(6))
+        {
+            <li><a href="@item.Href">@item.Title</a></li>
+        }
+    </ul>
+</section>

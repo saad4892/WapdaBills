@@ -1,0 +1,136 @@
+@{
+    var path = Context.Request.Path.Value ?? "/";
+    bool IsActive(string href) =>
+        string.Equals(path.TrimEnd('/'), href.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+        || (href != "/" && path.StartsWith(href.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase));
+}
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+    <div class="site-header__inner">
+        <a class="brand" asp-controller="Home" asp-action="Index" title="WAPDA Bills — Pakistan electricity bill checker">
+            <span class="mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                    <path fill="currentColor" d="M13 2 3.8 13.6h7.1L10 22l10.2-12.2h-7.2L13 2z"/>
+                </svg>
+            </span>
+            <span>
+                <strong>WAPDA Bills</strong>
+                <small>Pakistan electricity lookup</small>
+            </span>
+            <img class="brand-logo-fallback" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E" width="1" height="1" alt="WAPDA Bills logo" title="WAPDA Bills" hidden />
+        </a>
+
+        <button type="button"
+                class="nav-toggle"
+                id="nav-toggle"
+                aria-expanded="false"
+                aria-controls="mobile-drawer"
+                aria-label="Open menu">
+            <span class="nav-toggle__bars" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </span>
+        </button>
+
+        <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+            <a class="primary-nav__link @(IsActive("/") ? "is-on" : null)" href="/">Home</a>
+
+            @foreach (var menu in SiteNav.PrimaryMenus)
+            {
+                var panelId = "menu-" + menu.Id;
+                <div class="nav-item @(menu.Mega ? "nav-item--mega" : null)" data-nav-item>
+                    <button type="button"
+                            class="nav-trigger"
+                            id="trigger-@menu.Id"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            aria-controls="@panelId">
+                        @menu.Label
+                        <span class="nav-caret" aria-hidden="true"></span>
+                    </button>
+                    <div class="nav-panel @(menu.Mega ? "nav-panel--mega" : null)"
+                         id="@panelId"
+                         role="region"
+                         aria-labelledby="trigger-@menu.Id"
+                         hidden>
+                        @if (menu.Mega)
+                        {
+                            <ul class="mega-grid">
+                                @foreach (var item in menu.Links)
+                                {
+                                    <li>
+                                        <a href="@item.Href" class="mega-link @(IsActive(item.Href) ? "is-on" : null)">
+                                            <strong>@item.Title</strong>
+                                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                                            {
+                                                <span>@item.Description</span>
+                                            }
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <ul class="dropdown-list">
+                                @foreach (var item in menu.Links)
+                                {
+                                    <li>
+                                        <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">
+                                            <strong>@item.Title</strong>
+                                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                                            {
+                                                <span>@item.Description</span>
+                                            }
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            }
+        </nav>
+    </div>
+</header>
+
+<div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+
+<aside class="mobile-drawer"
+       id="mobile-drawer"
+       role="dialog"
+       aria-modal="true"
+       aria-label="Site menu"
+       hidden>
+    <div class="mobile-drawer__head">
+        <span class="mobile-drawer__title">Menu</span>
+        <button type="button" class="drawer-close" id="drawer-close" aria-label="Close menu">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <nav class="mobile-nav" aria-label="Mobile">
+        <a class="mobile-nav__link @(IsActive("/") ? "is-on" : null)" href="/">Home</a>
+
+        @foreach (var menu in SiteNav.PrimaryMenus)
+        {
+            var accordionId = "accordion-" + menu.Id;
+            <div class="mobile-accordion" data-accordion>
+                <button type="button"
+                        class="mobile-accordion__trigger"
+                        aria-expanded="false"
+                        aria-controls="@accordionId"
+                        id="acc-trigger-@menu.Id">
+                    @menu.Label
+                    <span class="acc-icon" aria-hidden="true"></span>
+                </button>
+                <div class="mobile-accordion__panel" id="@accordionId" role="region" aria-labelledby="acc-trigger-@menu.Id" hidden>
+                    @foreach (var item in menu.Links)
+                    {
+                        <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">@item.Title</a>
+                    }
+                </div>
+            </div>
+        }
+    </nav>
+</aside>

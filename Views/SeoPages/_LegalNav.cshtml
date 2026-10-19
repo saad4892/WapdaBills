@@ -1,0 +1,10 @@
+@{
+    var path = Context.Request.Path.Value ?? "";
+}
+<nav class="seo-link-list legal-nav" aria-label="Legal pages">
+    @foreach (var item in SiteNav.LegalLinks)
+    {
+        var on = string.Equals(path.TrimEnd('/'), item.Href.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
+        <a href="@item.Href" class="@(on ? "is-on" : null)">@item.Title</a>
+    }
+</nav>

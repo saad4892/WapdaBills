@@ -1,0 +1,21 @@
+@model (string Heading, string Body)
+
+<section class="page-intro seo-landing">
+    <p class="eyebrow">Calculators &amp; utilities</p>
+    <h1>@Model.Heading</h1>
+    <p>@Model.Body</p>
+    <div class="actions">
+        <a class="btn btn-gold" href="/">Check electricity bill</a>
+        <a class="btn btn-ghost" href="/unit-rates-tariff">Tariff overview</a>
+    </div>
+</section>
+
+<section class="seo-related">
+    <h2>Jump to a DISCO</h2>
+    <ul class="seo-link-list">
+        @foreach (var item in SiteNav.DiscoLandings.Take(8))
+        {
+            <li><a href="@item.Href">@item.Title</a></li>
+        }
+    </ul>
+</section>

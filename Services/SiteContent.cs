@@ -30,6 +30,25 @@ public static class SiteContent
         new("How long does a bill search take?", "The company portal usually answers in 10 to 20 seconds. Leave the page open until the bill appears.")
     ];
 
+    public static readonly IReadOnlyList<FaqItem> HomeFaqs =
+    [
+        new(
+            "How can I check my electricity bill online without a reference number?",
+            "Use the Consumer ID / customer ID printed on the bill if the 14-digit reference number is missing. Select your DISCO, enter the customer ID, and tap Check Bill. If neither number is available, contact your DISCO helpline or subdivision office printed on a previous bill."),
+        new(
+            "What is the difference between Reference Number and Consumer ID?",
+            "The reference number is a 14-digit account key used across most WAPDA/PITC DISCOs. The consumer ID (customer ID) is a shorter account number, usually 8–10 digits, shown near the top of the bill. Both can open a duplicate bill on this site; enter whichever you have."),
+        new(
+            "Can I pay my duplicate bill online via JazzCash or EasyPaisa?",
+            "Yes. After you open the duplicate bill, pay the payable amount through JazzCash, EasyPaisa, bank apps, or your DISCO’s published payment channels using the same reference number. This website does not collect payments."),
+        new(
+            "When does the electricity peak hours rate apply in Pakistan?",
+            "Peak (TOU) hours depend on your DISCO, meter type, and season. They are printed on time-of-use bills and company notices. Check the Peak Hours guide on this site, then confirm the schedule on your own bill before estimating charges."),
+        new(
+            "What should I do if my online bill is not updating?",
+            "Wait for the billing cycle to close, re-check the DISCO and number, and try the U/R letter if you use a reference number. If the portal still shows an old bill, verify on the official company channel or ask your subdivision office—upstream systems sometimes lag by a day or two.")
+    ];
+
     public static string Headquarters(string code) => code switch
     {
         "lesco" => "Lahore",

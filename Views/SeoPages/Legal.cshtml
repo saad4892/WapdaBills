@@ -1,0 +1,18 @@
+@model (string Heading, string Body)
+
+<section class="page-intro seo-landing legal-page">
+    <p class="eyebrow">Legal &amp; policy</p>
+    <h1>@Model.Heading</h1>
+    <div class="legal-body">
+        @foreach (var paragraph in Model.Body.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            <p>@paragraph.Trim()</p>
+        }
+    </div>
+    <nav class="seo-link-list legal-nav" aria-label="Legal pages">
+        @foreach (var item in SiteNav.LegalLinks)
+        {
+            <a href="@item.Href" class="@(Context.Request.Path.Equals(item.Href, StringComparison.OrdinalIgnoreCase) ? "is-on" : null)">@item.Title</a>
+        }
+    </nav>
+</section>

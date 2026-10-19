@@ -1,0 +1,125 @@
+@{
+    var link = (NavLink)ViewData["NavLink"]!;
+    var hub = (RegionalHub)ViewData["Hub"]!;
+    var companies = (DiscoCompany[])ViewData["Companies"]!;
+    var cities = (IReadOnlyList<RegionCityLink>)ViewData["Cities"]!;
+    var checkerUrl = (string)ViewData["CheckerUrl"]!;
+    var related = ViewData["RelatedRegions"] as NavLink[] ?? Array.Empty<NavLink>();
+}
+
+<article class="region-hub">
+    <section class="page-intro region-hub__hero" aria-labelledby="region-h1">
+        <p class="eyebrow">Regional electricity bills</p>
+        <h1 id="region-h1">@hub.H1</h1>
+        @foreach (var paragraph in hub.IntroParagraphs)
+        {
+            <p>@paragraph</p>
+        }
+        <div class="actions">
+            @if (!string.IsNullOrWhiteSpace(hub.RegionKey))
+            {
+                <a class="btn btn-gold" href="@checkerUrl">Check @hub.Label bills</a>
+            }
+            else
+            {
+                <a class="btn btn-gold" href="/ajked-bill">AJKED guidance</a>
+            }
+            <a class="btn btn-ghost" href="/how-to-check-bill">Find reference number</a>
+        </div>
+    </section>
+
+    @if (companies.Length > 0)
+    {
+        <section class="region-hub__section" aria-labelledby="region-discos-title">
+            <div class="story-head">
+                <h2 id="region-discos-title">Distribution companies in @hub.Label</h2>
+            </div>
+            <div class="region-disco-grid">
+                @foreach (var company in companies)
+                {
+                    var landing = SiteNav.DiscoLandings.FirstOrDefault(x => x.CompanyCode == company.Code);
+                    var landingHref = landing?.Href ?? SiteNav.CheckerUrl(company.Code, hub.RegionKey);
+                    var checkHref = SiteNav.CheckerUrl(company.Code, hub.RegionKey);
+                    <article class="region-disco-card" style="--accent:@company.Color">
+                        <div class="region-disco-card__body">
+                            <span class="disco-mono" aria-hidden="true">@company.ShortName[0]</span>
+                            <div>
+                                <h3>@company.ShortName</h3>
+                                <p class="region-disco-card__name">@company.FullName</p>
+                                <p class="region-disco-card__coverage">@company.Coverage</p>
+                            </div>
+                        </div>
+                        <div class="region-disco-card__actions">
+                            <a class="btn btn-ghost" href="@landingHref">@company.ShortName page</a>
+                            <a class="btn btn-gold" href="@checkHref">Check bill</a>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        @if (cities.Count > 0)
+        {
+            <section class="region-hub__section" aria-labelledby="region-cities-title">
+                <div class="story-head">
+                    <h2 id="region-cities-title">Major cities directory</h2>
+                </div>
+                <p class="section-lead">Find your city, then open the matching DISCO bill page.</p>
+                <ul class="city-directory">
+                    @foreach (var city in cities)
+                    {
+                        <li>
+                            <a href="@city.Href">
+                                <strong>@city.City</strong>
+                                <span>@city.DiscoShortName</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    }
+    else
+    {
+        <section class="region-hub__section" aria-labelledby="region-ajk-title">
+            <div class="story-head">
+                <h2 id="region-ajk-title">Kashmir &amp; GB coverage</h2>
+            </div>
+            <p class="section-lead">
+                Use the <a href="/ajked-bill">AJKED bill page</a> for Azad Jammu &amp; Kashmir guidance.
+                For mainland WAPDA DISCOs, return to the <a href="/">main bill checker</a>.
+            </p>
+        </section>
+    }
+
+    <section class="region-hub__section region-guide" aria-labelledby="region-guide-title">
+        <div class="story-head">
+            <h2 id="region-guide-title">Helplines, outages &amp; load shedding</h2>
+        </div>
+        <ul class="region-guide__list">
+            @foreach (var bullet in hub.GuideBullets)
+            {
+                <li>@bullet</li>
+            }
+        </ul>
+        <div class="actions">
+            <a class="btn btn-ghost" href="/complaint-helpline">DISCO helplines</a>
+            <a class="btn btn-ghost" href="/offices">Company offices</a>
+        </div>
+    </section>
+
+    @if (related.Length > 0)
+    {
+        <section class="region-hub__section" aria-labelledby="related-regions-title">
+            <div class="story-head">
+                <h2 id="related-regions-title">Other regional portals</h2>
+            </div>
+            <ul class="seo-link-list">
+                @foreach (var item in related)
+                {
+                    <li><a href="@item.Href">@item.Title</a></li>
+                }
+            </ul>
+        </section>
+    }
+</article>

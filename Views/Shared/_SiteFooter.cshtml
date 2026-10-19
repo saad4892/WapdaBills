@@ -1,0 +1,73 @@
+<footer class="site-footer" role="contentinfo">
+    <div class="site-footer__inner">
+        <div class="footer-brand-block">
+            <a class="brand brand--footer" href="/" title="Electricity Bill Checker Pakistan — home">
+                <span class="mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                        <path fill="currentColor" d="M13 2 3.8 13.6h7.1L10 22l10.2-12.2h-7.2L13 2z"/>
+                    </svg>
+                </span>
+                <span>
+                    <strong>Electricity Bill Checker Pakistan</strong>
+                    <small>Free public utility helper for DISCO duplicate bills</small>
+                </span>
+            </a>
+            <p class="footer-mission">
+                A free public utility helper that helps consumers check publicly available duplicate electricity bills online across Pakistan’s distribution companies.
+            </p>
+            <p class="footer-disclaimer">
+                Disclaimer: This website is a privately owned informational platform created to assist consumers in checking publicly available duplicate electricity bills online. This website is NOT affiliated with, endorsed by, or connected to WAPDA, NEPRA, or any Government Distribution Company (LESCO, MEPCO, IESCO, K-Electric, PESCO, FESCO, GEPCO, HESCO, SEPCO, QESCO). All brand logos and names belong to their respective official owners.
+            </p>
+        </div>
+
+        <div class="footer-grid" data-footer-accordions>
+            @{
+                var colIndex = 0;
+            }
+            @foreach (var column in SiteNav.FooterColumns)
+            {
+                colIndex++;
+                var panelId = "footer-panel-" + colIndex;
+                var triggerId = "footer-trigger-" + colIndex;
+                <nav class="footer-col" aria-label="@column.Title" data-footer-col>
+                    <h2 class="footer-col__title footer-col__title--desktop">@column.Title</h2>
+                    <button type="button"
+                            class="footer-col__trigger"
+                            id="@triggerId"
+                            aria-expanded="false"
+                            aria-controls="@panelId">
+                        <span>@column.Title</span>
+                        <span class="footer-col__icon" aria-hidden="true"></span>
+                    </button>
+                    <div class="footer-col__panel" id="@panelId" role="region" aria-labelledby="@triggerId">
+                        <ul>
+                            @foreach (var link in column.Links)
+                            {
+                                <li><a href="@link.Href">@link.Title</a></li>
+                            }
+                        </ul>
+                    </div>
+                </nav>
+            }
+        </div>
+
+        <div class="footer-meta">
+            <p>&copy; @DateTime.UtcNow.Year WAPDA Bills. All rights reserved.</p>
+            <nav class="footer-meta__links" aria-label="Quick links">
+                <a href="/faqs">FAQs</a>
+                <a href="/resources">Resources</a>
+                <a href="/guides">Guides</a>
+                <a href="/careers">Careers</a>
+            </nav>
+        </div>
+    </div>
+</footer>
+
+<button type="button"
+        class="back-to-top"
+        id="back-to-top"
+        aria-label="Back to top"
+        hidden>
+    <span aria-hidden="true">↑</span>
+    <span class="back-to-top__label">Top</span>
+</button>

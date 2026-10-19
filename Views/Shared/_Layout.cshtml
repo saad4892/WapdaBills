@@ -42,46 +42,16 @@
             </div>
         </div>
     }
-    <header class="topbar">
-        <div class="top">
-            <a class="brand" asp-controller="Home" asp-action="Index">
-                <span class="mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M13 2 3.8 13.6h7.1L10 22l10.2-12.2h-7.2L13 2z"/></svg>
-                </span>
-                <span>
-                    <strong>WAPDA Bills</strong>
-                    <small>Pakistan electricity lookup</small>
-                </span>
-            </a>
-            <nav class="nav">
-                <a class="@(Context.Request.Path == "/" ? "is-on" : null)" href="/">Bill Check</a>
-                <a class="@(Context.Request.Path.StartsWithSegments("/find-number") ? "is-on" : null)" href="/find-number">Find Number</a>
-                <a class="@(Context.Request.Path.StartsWithSegments("/resources") ? "is-on" : null)" href="/resources">Resources</a>
-                <a class="@(Context.Request.Path.StartsWithSegments("/guides") ? "is-on" : null)" href="/guides">Guides</a>
-                <a class="@(Context.Request.Path.StartsWithSegments("/faqs") ? "is-on" : null)" href="/faqs">FAQs</a>
-                <a class="@(Context.Request.Path.StartsWithSegments("/offices") ? "is-on" : null)" href="/offices">Offices</a>
-                <a class="@(Context.Request.Path.StartsWithSegments("/careers") ? "is-on" : null)" href="/careers">Careers</a>
-            </nav>
-        </div>
-    </header>
-    <main>
+
+    @await Html.PartialAsync("_SiteHeader")
+
+    <main id="main">
         @RenderBody()
     </main>
-    <footer class="footbar">
-        <div class="foot">
-            <nav class="nav">
-                <a href="/">Bill Check</a>
-                <a href="/find-number">Find Number</a>
-                <a href="/resources">Resources</a>
-                <a href="/guides">Guides</a>
-                <a href="/faqs">FAQs</a>
-                <a href="/offices">Offices</a>
-                <a href="/careers">Careers</a>
-                <a href="/admin">Admin</a>
-            </nav>
-            <p>WAPDA Bills</p>
-        </div>
-    </footer>
+
+    @await Html.PartialAsync("_SiteFooter")
+
+    <script src="~/js/nav.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

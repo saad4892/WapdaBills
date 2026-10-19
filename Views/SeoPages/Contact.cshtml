@@ -1,0 +1,62 @@
+@model ContactFormModel
+@{
+    var publicEmail = ViewData["PublicEmail"] as string ?? "privacy@example.com";
+    var privacyEmail = ViewData["PrivacyEmail"] as string ?? publicEmail;
+    var sent = ViewData["ContactSent"] as bool? == true;
+}
+
+<section class="page-intro legal-page">
+    @await Html.PartialAsync("_LegalHeader", ("Contact Us", "Legal & policy"))
+    <p class="section-lead">
+        Use this form for website feedback, privacy questions, or legal notices about WAPDA Bills.
+        For bill disputes, outages, or meter issues, contact your DISCO directly.
+    </p>
+</section>
+
+<div class="contact-grid">
+    <aside class="contact-aside" aria-label="Email contacts">
+        <h2>Privacy &amp; legal email</h2>
+        <p>Dedicated address for privacy and legal queries:</p>
+        <p><a class="contact-email" href="mailto:@privacyEmail">@privacyEmail</a></p>
+        <h2>General email</h2>
+        <p><a class="contact-email" href="mailto:@publicEmail">@publicEmail</a></p>
+        <p class="field-hint">Replace example.com addresses in site configuration before going live.</p>
+    </aside>
+
+    <div class="contact-form-wrap">
+        @if (sent)
+        {
+            <div class="saved" role="status">Thank you. Your message was received.</div>
+        }
+
+        <form class="contact-form" method="post" action="/contact-us" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="hp-field" aria-hidden="true">
+                <label asp-for="Website">Website</label>
+                <input asp-for="Website" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <div class="bill-tool__field">
+                <label class="field-label" asp-for="Name"></label>
+                <input class="bill-number" asp-for="Name" autocomplete="name" />
+                <span class="field-error" asp-validation-for="Name"></span>
+            </div>
+
+            <div class="bill-tool__field">
+                <label class="field-label" asp-for="Email"></label>
+                <input class="bill-number" asp-for="Email" autocomplete="email" inputmode="email" />
+                <span class="field-error" asp-validation-for="Email"></span>
+            </div>
+
+            <div class="bill-tool__field">
+                <label class="field-label" asp-for="Message"></label>
+                <textarea class="contact-message" asp-for="Message" rows="6"></textarea>
+                <span class="field-error" asp-validation-for="Message"></span>
+            </div>
+
+            <button class="btn btn-gold bill-submit" type="submit">Send message</button>
+        </form>
+    </div>
+</div>
+
+@await Html.PartialAsync("_LegalNav")

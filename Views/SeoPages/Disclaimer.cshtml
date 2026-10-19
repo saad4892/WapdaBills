@@ -1,0 +1,5 @@
+<section class="page-intro legal-page">
+    @await Html.PartialAsync("_LegalHeader", ("Legal Disclaimer", "Legal & policy"))
+</section>
+@await Html.PartialAsync("_LegalSections", LegalContent.Disclaimer)
+@await Html.PartialAsync("_LegalNav")

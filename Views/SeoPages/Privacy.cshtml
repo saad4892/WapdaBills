@@ -1,0 +1,5 @@
+<section class="page-intro legal-page">
+    @await Html.PartialAsync("_LegalHeader", ("Privacy Policy", "Legal & policy"))
+</section>
+@await Html.PartialAsync("_LegalSections", LegalContent.Privacy)
+@await Html.PartialAsync("_LegalNav")

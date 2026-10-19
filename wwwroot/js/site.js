@@ -5,121 +5,184 @@
     }
 
     const regionInput = document.getElementById("Region");
-    const detail = document.getElementById("region-detail");
-    const title = document.getElementById("selected-company");
-    const keNote = document.getElementById("ke-note");
-    const pitcFields = document.getElementById("pitc-fields");
+    const companySelect = document.getElementById("Company");
+    const searchByInput = document.getElementById("SearchBy");
     const number = document.getElementById("Number");
     const ruRow = document.getElementById("ru-row");
-    const lookup = document.getElementById("lookup-panel");
+    const keNote = document.getElementById("ke-note");
+    const pitcFields = document.getElementById("pitc-fields");
+    const pitcMeta = document.getElementById("pitc-meta");
+    const submitBtn = document.getElementById("open-bill");
 
-    function visibleChecked() {
-        return document.querySelector('[data-region-panel]:not(.is-out) input[name="Company"]:checked');
+    const modal = document.getElementById("ref-help-modal");
+    const openHelp = document.getElementById("ref-help-open");
+    const closeHelp = document.getElementById("ref-help-close");
+    const dismissHelp = document.getElementById("ref-help-dismiss");
+    let lastHelpFocus = null;
+
+    function selectedOption() {
+        if (!companySelect) return null;
+        return companySelect.options[companySelect.selectedIndex] || null;
+    }
+
+    function digitCount(value) {
+        return String(value || "").replace(/\D/g, "").length;
+    }
+
+    function syncSearchBy() {
+        if (!searchByInput || !number) return;
+        const digits = digitCount(number.value);
+        const mode = digits > 0 && digits < 14 ? "appno" : "refno";
+        searchByInput.value = mode;
+        if (ruRow) {
+            ruRow.hidden = mode === "appno";
+        }
     }
 
     function syncCompany() {
-        const checked = visibleChecked();
-        if (!checked) {
-            title.textContent = "Select a company";
-            keNote.hidden = true;
-            pitcFields.hidden = false;
-            return;
+        const option = selectedOption();
+        const code = option && option.value ? option.value : "";
+        const isPitc = !code || (option && option.dataset.pitc === "true");
+
+        if (regionInput && option && option.dataset.region) {
+            regionInput.value = option.dataset.region;
         }
 
-        title.textContent = (checked.dataset.short || "Company") + " bill";
-        const isPitc = checked.dataset.pitc === "true";
-        keNote.hidden = isPitc;
-        pitcFields.hidden = !isPitc;
-    }
-
-    function syncSearch() {
-        const by = form.querySelector('input[name="SearchBy"]:checked');
-        const customer = by && by.value === "appno";
-        ruRow.hidden = !!customer;
-        number.placeholder = customer ? "10 digit customer ID" : "14 digit reference number";
-    }
-
-    function showRegion(key) {
-        regionInput.value = key;
-        document.querySelectorAll("[data-region-btn]").forEach(function (button) {
-            const on = button.dataset.regionBtn === key;
-            button.classList.toggle("is-on", on);
-            button.setAttribute("aria-pressed", on ? "true" : "false");
-        });
-        document.querySelectorAll("[data-region-panel]").forEach(function (panel) {
-            const on = panel.dataset.regionPanel === key;
-            panel.classList.toggle("is-out", !on);
-            if (on && detail) {
-                detail.textContent = panel.dataset.detail || "";
-            }
-        });
-
-        const checked = document.querySelector('input[name="Company"]:checked');
-        if (checked) {
-            const same = document.querySelector('[data-region-panel]:not(.is-out) input[name="Company"][value="' + checked.value + '"]');
-            if (same && same !== checked) {
-                checked.checked = false;
-                same.checked = true;
-            } else if (!same) {
-                checked.checked = false;
+        if (keNote) {
+            keNote.hidden = isPitc;
+        }
+        if (pitcFields) {
+            pitcFields.hidden = !isPitc && !!code;
+        }
+        if (pitcMeta) {
+            pitcMeta.hidden = !isPitc && !!code;
+        }
+        if (submitBtn) {
+            if (!code) {
+                submitBtn.textContent = "Check Bill";
+            } else if (!isPitc) {
+                submitBtn.textContent = "Open K-Electric";
+            } else {
+                submitBtn.textContent = "Check Bill";
             }
         }
-
-        syncCompany();
+        syncSearchBy();
     }
 
-    document.querySelectorAll("[data-region-btn]").forEach(function (button) {
-        button.addEventListener("click", function () {
-            showRegion(button.dataset.regionBtn);
-        });
-    });
+    function ensureAlert(message) {
+        let alertBox = form.querySelector(".alert");
+        if (!alertBox) {
+            alertBox = document.createElement("div");
+            alertBox.className = "alert";
+            alertBox.setAttribute("role", "alert");
+            const grid = form.querySelector(".bill-tool__grid");
+            if (grid) {
+                form.insertBefore(alertBox, grid);
+            } else {
+                form.prepend(alertBox);
+            }
+        }
+        alertBox.textContent = message;
+        alertBox.hidden = false;
+        return alertBox;
+    }
 
-    form.addEventListener("change", function (event) {
-        if (event.target.name === "Company") {
-            syncCompany();
-            lookup.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-        if (event.target.name === "SearchBy") {
-            syncSearch();
-        }
-    });
+    if (companySelect) {
+        companySelect.addEventListener("change", syncCompany);
+    }
+    if (number) {
+        number.addEventListener("input", syncSearchBy);
+        number.addEventListener("change", syncSearchBy);
+    }
 
     form.addEventListener("submit", function (event) {
-        const checked = visibleChecked();
-        let alertBox = form.querySelector(".alert");
-        function warn(message) {
+        const option = selectedOption();
+        const code = option && option.value ? option.value : "";
+        if (!code) {
             event.preventDefault();
-            if (!alertBox) {
-                alertBox = document.createElement("div");
-                alertBox.className = "alert";
-                alertBox.setAttribute("role", "alert");
-                lookup.insertBefore(alertBox, lookup.firstChild);
-            }
-            alertBox.textContent = message;
-        }
-
-        if (!checked) {
-            warn("Select a company first.");
+            ensureAlert("Select a distribution company first.");
+            companySelect.focus();
             return;
         }
 
-        if (checked.dataset.pitc !== "true") {
+        if (option.dataset.pitc !== "true") {
             return;
         }
 
-        const digits = number.value.replace(/\D/g, "");
-        const by = form.querySelector('input[name="SearchBy"]:checked').value;
-        const needed = by === "appno" ? 8 : 14;
-        if (digits.length < needed) {
-            warn(by === "appno" ? "Enter a customer ID." : "Enter the 14-digit reference number.");
+        const digits = digitCount(number.value);
+        syncSearchBy();
+        const mode = searchByInput.value;
+        const needed = mode === "appno" ? 8 : 14;
+        if (digits < needed) {
+            event.preventDefault();
+            ensureAlert(mode === "appno"
+                ? "Enter a customer ID (at least 8 digits)."
+                : "Enter the 14-digit reference number.");
+            number.focus();
             return;
         }
 
-        const button = document.getElementById("open-bill");
-        button.disabled = true;
-        button.textContent = "Opening bill...";
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Checking bill...";
     });
 
-    syncSearch();
+    function openModal() {
+        if (!modal) return;
+        lastHelpFocus = document.activeElement;
+        if (typeof modal.showModal === "function") {
+            modal.showModal();
+        } else {
+            modal.setAttribute("open", "");
+        }
+        const focusTarget = closeHelp || dismissHelp;
+        if (focusTarget) focusTarget.focus();
+    }
+
+    function closeModal() {
+        if (!modal) return;
+        if (typeof modal.close === "function") {
+            modal.close();
+        } else {
+            modal.removeAttribute("open");
+        }
+        if (lastHelpFocus && typeof lastHelpFocus.focus === "function") {
+            lastHelpFocus.focus();
+        }
+    }
+
+    if (openHelp) openHelp.addEventListener("click", openModal);
+    if (closeHelp) closeHelp.addEventListener("click", closeModal);
+    if (dismissHelp) dismissHelp.addEventListener("click", closeModal);
+    if (modal) {
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) closeModal();
+        });
+        modal.addEventListener("cancel", function (event) {
+            event.preventDefault();
+            closeModal();
+        });
+    }
+
+    // Honor /?company=&region= deep-links from SEO landings / nav CTAs.
+    (function applyDeepLink() {
+        const params = new URLSearchParams(window.location.search);
+        const company = (params.get("company") || "").toLowerCase();
+        if (company && companySelect) {
+            const match = Array.from(companySelect.options).find(function (opt) {
+                return opt.value.toLowerCase() === company;
+            });
+            if (match) {
+                companySelect.value = match.value;
+            }
+        }
+        const region = params.get("region");
+        if (region && regionInput) {
+            regionInput.value = region;
+        }
+        if (window.location.hash === "#bill-form" || company) {
+            form.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    })();
+
     syncCompany();
 })();
