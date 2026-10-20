@@ -1,27 +1,27 @@
 <section class="service-band how-check" aria-labelledby="how-check-title">
     <div class="story-head">
-        <h2 id="how-check-title">How to View &amp; Download Your Online Electricity Bill</h2>
+        <h2 id="how-check-title" data-i18n="home.howTitle">How to View &amp; Download Your Online Electricity Bill</h2>
     </div>
     <ol class="steps steps-grid how-check__steps">
         <li>
             <span class="step-num" aria-hidden="true">1</span>
-            <strong>Locate your reference number</strong>
-            <span>Find the 14-digit reference number on your previous utility bill copy (top left).</span>
+            <strong data-i18n="home.how1Title">Locate your reference number</strong>
+            <span data-i18n="home.how1Body">Find the 14-digit reference number on your previous utility bill copy (top left).</span>
         </li>
         <li>
             <span class="step-num" aria-hidden="true">2</span>
-            <strong>Select your DISCO</strong>
-            <span>Choose your electricity distribution company from the menu above.</span>
+            <strong data-i18n="home.how2Title">Select your DISCO</strong>
+            <span data-i18n="home.how2Body">Choose your electricity distribution company from the menu above.</span>
         </li>
         <li>
             <span class="step-num" aria-hidden="true">3</span>
-            <strong>Enter and check</strong>
-            <span>Type your reference number or consumer ID into the input field and click Check Bill.</span>
+            <strong data-i18n="home.how3Title">Enter and check</strong>
+            <span data-i18n="home.how3Body">Type your reference number or consumer ID into the input field and click Check Bill.</span>
         </li>
         <li>
             <span class="step-num" aria-hidden="true">4</span>
-            <strong>View or print</strong>
-            <span>View, print, or save your official duplicate bill from the result page.</span>
+            <strong data-i18n="home.how4Title">View or print</strong>
+            <span data-i18n="home.how4Body">View, print, or save your official duplicate bill from the result page.</span>
         </li>
     </ol>
 </section>
@@ -30,7 +30,7 @@
 
 <section class="service-band tools-band" aria-labelledby="tools-title">
     <div class="story-head">
-        <h2 id="tools-title">Electricity Tools &amp; Calculators</h2>
+        <h2 id="tools-title" data-i18n="home.toolsTitle">Electricity Tools &amp; Calculators</h2>
     </div>
     <div class="tool-grid">
         <a class="tool-card" href="/bill-calculator">
@@ -50,9 +50,9 @@
 
 <section class="service-band charges-band" aria-labelledby="charges-title">
     <div class="story-head">
-        <h2 id="charges-title">Understanding Your Electricity Bill Taxes &amp; Surcharges</h2>
+        <h2 id="charges-title" data-i18n="home.chargesTitle">Understanding Your Electricity Bill Taxes &amp; Surcharges</h2>
     </div>
-    <p class="section-lead">Pakistani utility bills often include more than energy charges. These common line items explain why the payable amount differs from a simple units × rate calculation.</p>
+    <p class="section-lead" data-i18n="home.chargesLead">Pakistani utility bills often include more than energy charges. These common line items explain why the payable amount differs from a simple units × rate calculation.</p>
     <div class="charge-grid">
         <article class="charge-card">
             <h3>Fuel Price Adjustment (FPA)</h3>
@@ -85,15 +85,21 @@
 
 <section class="service-band home-faqs" id="faqs" aria-labelledby="home-faq-title">
     <div class="story-head">
-        <h2 id="home-faq-title">Frequently Asked Questions (FAQs)</h2>
-        <a href="/faqs">All questions</a>
+        <h2 id="home-faq-title" data-i18n="home.faqTitle">Frequently Asked Questions (FAQs)</h2>
+        <a href="/faqs" data-i18n="home.faqAll">All questions</a>
     </div>
     <div class="faq-list" data-faq-accordion>
+        @{
+            var faqIndex = 0;
+        }
         @foreach (var item in SiteContent.HomeFaqs)
         {
+            faqIndex++;
             <details class="faq">
-                <summary>@item.Question</summary>
-                <p>@item.Answer</p>
+                <summary>
+                    <h3 class="faq-q" data-i18n="@($"home.faq{faqIndex}q")">@item.Question</h3>
+                </summary>
+                <p data-i18n="@($"home.faq{faqIndex}a")">@item.Answer</p>
             </details>
         }
     </div>

@@ -10,7 +10,9 @@
     @foreach (var item in Model)
     {
         <details class="faq">
-            <summary>@item.Question</summary>
+            <summary>
+                <h3 class="faq-q">@item.Question</h3>
+            </summary>
             <p>@item.Answer</p>
         </details>
     }

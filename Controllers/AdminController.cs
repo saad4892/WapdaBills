@@ -40,7 +40,6 @@ public class AdminController : Controller
     {
         ViewData["Title"] = "Admin";
         ViewBag.Guides = await _db.BlogPosts.CountAsync();
-        ViewBag.Jobs = await _db.JobListings.CountAsync();
         return View();
     }
 
@@ -311,116 +310,6 @@ public class AdminController : Controller
         }
 
         return RedirectToAction(nameof(Guides));
-    }
-
-    [HttpGet("/admin/careers")]
-    public async Task<IActionResult> Careers()
-    {
-        ViewData["Title"] = "Manage careers";
-        var jobs = await _db.JobListings.OrderByDescending(job => job.UpdatedAt).ToListAsync();
-        return View(jobs);
-    }
-
-    [HttpGet("/admin/careers/edit/{id:int?}")]
-    public async Task<IActionResult> EditCareer(int? id)
-    {
-        ViewData["Title"] = id is null ? "New career notice" : "Edit career notice";
-        if (id is null)
-        {
-            return View(new JobListing { IsPublished = true, EmploymentType = "Career notice" });
-        }
-
-        var job = await _db.JobListings.FindAsync(id);
-        return job is null ? NotFound() : View(job);
-    }
-
-    [HttpPost("/admin/careers/edit/{id:int?}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditCareer(int? id, JobListing input, IFormFile? cover, bool removeImage)
-    {
-        input.Title = input.Title.Trim();
-        input.Organization = input.Organization.Trim();
-        input.Location = input.Location.Trim();
-        input.EmploymentType = input.EmploymentType.Trim();
-        input.Summary = input.Summary.Trim();
-        input.Body = input.Body.Trim();
-        input.ApplyUrl = string.IsNullOrWhiteSpace(input.ApplyUrl) ? null : input.ApplyUrl.Trim();
-        input.MetaDescription = input.MetaDescription.Trim();
-        input.MetaKeywords = input.MetaKeywords.Trim();
-        if (input.Title.Length == 0 || input.Body.Length == 0 || input.Organization.Length == 0)
-        {
-            ModelState.AddModelError(string.Empty, "Title, organization, and body are required.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(input.ApplyUrl) &&
-            (!Uri.TryCreate(input.ApplyUrl, UriKind.Absolute, out var applyUri) ||
-             applyUri.Scheme is not "http" and not "https"))
-        {
-            ModelState.AddModelError(nameof(input.ApplyUrl), "Use a full http or https link.");
-        }
-
-        var imageError = await SaveImageAsync(cover);
-        if (imageError.Error is not null)
-        {
-            ModelState.AddModelError(string.Empty, imageError.Error);
-        }
-
-        if (!ModelState.IsValid)
-        {
-            ViewData["Title"] = input.Id == 0 ? "New career notice" : "Edit career notice";
-            return View(input);
-        }
-
-        JobListing job;
-        if (input.Id == 0)
-        {
-            job = input;
-            job.PublishedAt = DateTime.UtcNow;
-            _db.JobListings.Add(job);
-        }
-        else
-        {
-            job = await _db.JobListings.FindAsync(input.Id) ?? throw new InvalidOperationException();
-            job.Title = input.Title;
-            job.Organization = input.Organization;
-            job.Location = input.Location;
-            job.EmploymentType = string.IsNullOrWhiteSpace(input.EmploymentType) ? "Career notice" : input.EmploymentType;
-            job.Summary = input.Summary;
-            job.Body = input.Body;
-            job.ApplyUrl = input.ApplyUrl;
-            job.Deadline = input.Deadline;
-            job.MetaDescription = input.MetaDescription;
-            job.MetaKeywords = input.MetaKeywords;
-            job.IsPublished = input.IsPublished;
-        }
-
-        if (removeImage)
-        {
-            job.ImagePath = null;
-        }
-
-        if (imageError.Path is not null)
-        {
-            job.ImagePath = imageError.Path;
-        }
-
-        job.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(Careers));
-    }
-
-    [HttpPost("/admin/careers/delete/{id:int}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteCareer(int id)
-    {
-        var job = await _db.JobListings.FindAsync(id);
-        if (job is not null)
-        {
-            _db.JobListings.Remove(job);
-            await _db.SaveChangesAsync();
-        }
-
-        return RedirectToAction(nameof(Careers));
     }
 
     [HttpGet("/admin/seo")]

@@ -25,7 +25,6 @@ public class SitemapController : Controller
             .Select(path => origin + path)
             .ToList();
         urls.AddRange(await _db.BlogPosts.Where(post => post.IsPublished).Select(post => origin + "/guides/" + post.Slug).ToListAsync());
-        urls.AddRange(await _db.JobListings.Where(job => job.IsPublished).Select(job => origin + "/careers/" + job.Id).ToListAsync());
 
         XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
         var document = new XDocument(

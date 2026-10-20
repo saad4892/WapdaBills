@@ -1,8 +1,20 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" class="lang-en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+        (function () {
+            try {
+                var lang = localStorage.getItem("wapda_lang") === "ur" ? "ur" : "en";
+                var html = document.documentElement;
+                html.setAttribute("lang", lang);
+                html.setAttribute("dir", lang === "ur" ? "rtl" : "ltr");
+                html.classList.add(lang === "ur" ? "lang-ur" : "lang-en");
+                html.classList.remove(lang === "ur" ? "lang-en" : "lang-ur");
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
     <title>@(ViewData["Title"] ?? "WAPDA Bills")</title>
     <meta name="description" content="@(ViewData["Description"] ?? "Check electricity bills for every WAPDA distribution company in Pakistan.")" />
     <meta name="keywords" content="@(ViewData["Keywords"] ?? "Pakistan electricity bill, LESCO, MEPCO, FESCO, WAPDA")" />
@@ -22,7 +34,7 @@
     <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -33,7 +45,6 @@
                 <span>Admin</span>
                 <a href="/admin">Desk</a>
                 <a href="/admin/guides">Guides</a>
-                <a href="/admin/careers">Careers</a>
                 <a href="/admin/seo">Search</a>
                 <form method="post" action="/admin/logout">
                     @Html.AntiForgeryToken()
@@ -52,6 +63,7 @@
     @await Html.PartialAsync("_SiteFooter")
 
     <script src="~/js/nav.js" asp-append-version="true"></script>
+    <script src="~/js/i18n.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

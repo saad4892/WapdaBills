@@ -86,9 +86,9 @@ public static class ContentSeeder
                     - The application address is on that company's own website.
                     - No one asks you to pay this website, or a middleman, to "confirm" a WAPDA seat.
 
-                    ## What this careers section is
+                    ## What this guide is
 
-                    The careers pages here explain where to follow official notices. They are not vacancy ads, and they do not take applications or payments.
+                    This guide explains where to follow official recruitment notices. It is not a vacancy ad, and this site does not take applications or payments.
                     """));
         }
 

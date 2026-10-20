@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check Electricity Bill Online in Pakistan | WAPDA Bills</title>
+<meta name="description" content="Check and view free live duplicate electricity bills online for LESCO, MEPCO, IESCO, K-Electric, FESCO, PESCO, GEPCO, HESCO, SEPCO, and QESCO in Pakistan.">
+
+<!--
+  Preview only: this CDN script lets the file open on its own.
+  On your Linux server, remove it and move the theme block below into tailwind.config.js.
+-->
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy: '#0B2A5B',      /* colour 1: headers, hero, text */
+          'navy-deep': '#071B3D', /* darker shade of colour 1: footer */
+          sun: '#FFC107',       /* colour 2: main action + highlights only */
+          tint: '#F2F6FC',      /* light tint of colour 1: alternate sections */
+          line: '#D9E2F0'
+        },
+        fontFamily: { sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  :focus-visible { outline: 3px solid #0B2A5B; outline-offset: 2px; }
+  .on-dark :focus-visible { outline-color: #FFC107; }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+
+<body class="bg-white font-sans text-navy antialiased">
+
+<!-- HEADER: white, separated from the hero by a border -->
+<header class="sticky top-0 z-30 border-b border-line bg-white">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+    <a href="/" class="flex items-center gap-3">
+      <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-navy text-sun" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+      </span>
+      <span class="leading-tight">
+        <span class="block text-base font-bold">WAPDA Bills</span>
+        <span class="block text-xs text-slate-600">Pakistan electricity lookup</span>
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-1 text-sm font-semibold md:flex" aria-label="Main">
+      <a href="/" class="border-b-4 border-sun px-3 py-2">Home</a>
+      <a href="/discos" class="px-3 py-2 hover:text-slate-600">DISCOs</a>
+      <a href="/regions" class="px-3 py-2 hover:text-slate-600">By region</a>
+      <a href="/tools" class="px-3 py-2 hover:text-slate-600">Calculators</a>
+      <a href="/guides" class="px-3 py-2 hover:text-slate-600">Guides</a>
+    </nav>
+
+    <details class="relative md:hidden">
+      <summary class="cursor-pointer rounded-lg border border-line px-3 py-2 text-sm font-semibold">Menu</summary>
+      <div class="absolute right-0 mt-2 w-48 rounded-lg border border-line bg-white p-2 text-sm font-semibold shadow-lg">
+        <a href="/" class="block rounded px-3 py-2 hover:bg-tint">Home</a>
+        <a href="/discos" class="block rounded px-3 py-2 hover:bg-tint">DISCOs</a>
+        <a href="/regions" class="block rounded px-3 py-2 hover:bg-tint">By region</a>
+        <a href="/tools" class="block rounded px-3 py-2 hover:bg-tint">Calculators</a>
+        <a href="/guides" class="block rounded px-3 py-2 hover:bg-tint">Guides</a>
+      </div>
+    </details>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO: full navy, form in a white card -->
+<section class="on-dark relative bg-navy text-white">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 pb-24 pt-12 lg:grid-cols-2 lg:items-center lg:pb-28 lg:pt-16">
+    <div>
+      <h1 class="text-4xl font-extrabold leading-tight sm:text-5xl">Check Electricity Bill Online in Pakistan</h1>
+      <p class="mt-4 max-w-md text-lg text-white/85">View, print or download your duplicate bill for LESCO, MEPCO, IESCO, K-Electric and every other DISCO.</p>
+      <ul class="mt-6 space-y-2 text-base">
+        <li class="flex items-center gap-2"><svg class="h-5 w-5 shrink-0 text-sun" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M8 14.4 3.6 10l1.4-1.4 3 3 7-7L16.4 6z"/></svg>Free, with no login</li>
+        <li class="flex items-center gap-2"><svg class="h-5 w-5 shrink-0 text-sun" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M8 14.4 3.6 10l1.4-1.4 3 3 7-7L16.4 6z"/></svg>All 12 distribution companies</li>
+        <li class="flex items-center gap-2"><svg class="h-5 w-5 shrink-0 text-sun" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M8 14.4 3.6 10l1.4-1.4 3 3 7-7L16.4 6z"/></svg>Works on mobile</li>
+      </ul>
+    </div>
+
+    <!-- Wire action/method to your existing bill-check endpoint -->
+    <form id="bill-form" action="/bill" method="get" class="rounded-2xl border-t-8 border-sun bg-white p-5 text-navy shadow-xl sm:p-6">
+      <label for="company" class="block text-sm font-bold">Distribution company</label>
+      <select id="company" name="company" required class="mt-1 w-full rounded-lg border border-line bg-white px-3 py-3 text-base">
+        <option value="">Select provider</option>
+        <option value="lesco">LESCO (Lahore)</option>
+        <option value="gepco">GEPCO (Gujranwala)</option>
+        <option value="fesco">FESCO (Faisalabad)</option>
+        <option value="iesco">IESCO (Islamabad)</option>
+        <option value="mepco">MEPCO (Multan)</option>
+        <option value="hazeco">HAZECO (Abbottabad)</option>
+        <option value="pesco">PESCO (Peshawar)</option>
+        <option value="tesco">TESCO (Peshawar)</option>
+        <option value="hesco">HESCO (Hyderabad)</option>
+        <option value="sepco">SEPCO (Sukkur)</option>
+        <option value="ke">K-Electric (Karachi)</option>
+        <option value="qesco">QESCO (Quetta)</option>
+      </select>
+
+      <label for="ref" class="mt-4 block text-sm font-bold">Reference number or consumer ID</label>
+      <input id="ref" name="ref" required inputmode="numeric" autocomplete="off" pattern="[0-9 ]{8,16}" maxlength="16"
+             placeholder="14-digit reference number" class="mt-1 w-full rounded-lg border border-line px-3 py-3 text-base">
+      <a href="/how-to-check-bill" class="mt-2 inline-block text-sm font-semibold underline">Where can I find my reference number?</a>
+
+      <details class="mt-3 text-sm">
+        <summary class="cursor-pointer font-semibold text-slate-600">Advanced: bill code</summary>
+        <div class="mt-2 flex gap-4">
+          <label class="flex items-center gap-2"><input type="radio" name="code" value="U" checked> U</label>
+          <label class="flex items-center gap-2"><input type="radio" name="code" value="R"> R</label>
+        </div>
+        <p class="mt-1 text-slate-600">If U does not match, we try R automatically.</p>
+      </details>
+
+      <button id="submit-btn" type="submit" class="mt-5 w-full rounded-lg bg-sun px-4 py-4 text-lg font-extrabold text-navy hover:brightness-95 disabled:opacity-70">Check bill</button>
+      <p id="status" class="mt-3 text-sm text-slate-600" role="status" aria-live="polite">Fetching a bill can take 10 to 20 seconds.</p>
+    </form>
+  </div>
+
+  <!-- Curved divider into the white section below -->
+  <svg class="absolute bottom-0 left-0 block w-full" viewBox="0 0 1440 60" preserveAspectRatio="none" height="48" aria-hidden="true">
+    <path d="M0 60V20C240 56 480 0 720 20s480 36 720 0v40z" fill="#fff"/>
+  </svg>
+</section>
+
+<!-- DISCOs: white -->
+<section class="bg-white py-14">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 class="text-2xl font-bold sm:text-3xl">Choose your electricity company</h2>
+    <p class="mt-2 text-slate-600">Not sure which one covers your city? Check the company name printed on your bill.</p>
+    <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <li><a href="/lesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">L</span><span><span class="block font-bold">LESCO</span><span class="block text-sm text-slate-600">Lahore</span></span></a></li>
+      <li><a href="/gepco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">G</span><span><span class="block font-bold">GEPCO</span><span class="block text-sm text-slate-600">Gujranwala</span></span></a></li>
+      <li><a href="/fesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">F</span><span><span class="block font-bold">FESCO</span><span class="block text-sm text-slate-600">Faisalabad</span></span></a></li>
+      <li><a href="/iesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">I</span><span><span class="block font-bold">IESCO</span><span class="block text-sm text-slate-600">Islamabad</span></span></a></li>
+      <li><a href="/mepco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">M</span><span><span class="block font-bold">MEPCO</span><span class="block text-sm text-slate-600">Multan</span></span></a></li>
+      <li><a href="/hazeco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">H</span><span><span class="block font-bold">HAZECO</span><span class="block text-sm text-slate-600">Abbottabad</span></span></a></li>
+      <li><a href="/pesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">P</span><span><span class="block font-bold">PESCO</span><span class="block text-sm text-slate-600">Peshawar</span></span></a></li>
+      <li><a href="/tesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">T</span><span><span class="block font-bold">TESCO</span><span class="block text-sm text-slate-600">Peshawar</span></span></a></li>
+      <li><a href="/hesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">H</span><span><span class="block font-bold">HESCO</span><span class="block text-sm text-slate-600">Hyderabad</span></span></a></li>
+      <li><a href="/sepco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">S</span><span><span class="block font-bold">SEPCO</span><span class="block text-sm text-slate-600">Sukkur</span></span></a></li>
+      <li><a href="/kelectric-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">K</span><span><span class="block font-bold">K-Electric</span><span class="block text-sm text-slate-600">Karachi</span></span></a></li>
+      <li><a href="/qesco-bill" class="flex items-center gap-3 rounded-lg border border-line p-3 hover:border-sun hover:bg-tint"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy font-bold text-sun">Q</span><span><span class="block font-bold">QESCO</span><span class="block text-sm text-slate-600">Quetta</span></span></a></li>
+    </ul>
+    <p class="mt-4 text-sm text-slate-600">Azad Kashmir? Read the <a href="/ajked-bill" class="font-semibold underline">AJKED guide</a>.</p>
+  </div>
+</section>
+
+<!-- HOW-TO: tint -->
+<section class="bg-tint py-14">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 class="text-2xl font-bold sm:text-3xl">How to view and download your bill</h2>
+    <ol class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <li class="rounded-xl bg-white p-5"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-navy font-bold text-sun">1</span><h3 class="mt-3 font-bold">Find your reference number</h3><p class="mt-1 text-slate-700">It has 14 digits and sits at the top left of your old bill.</p></li>
+      <li class="rounded-xl bg-white p-5"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-navy font-bold text-sun">2</span><h3 class="mt-3 font-bold">Select your company</h3><p class="mt-1 text-slate-700">Pick the DISCO printed on your bill.</p></li>
+      <li class="rounded-xl bg-white p-5"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-navy font-bold text-sun">3</span><h3 class="mt-3 font-bold">Enter the number</h3><p class="mt-1 text-slate-700">Type it in and press Check bill.</p></li>
+      <li class="rounded-xl bg-white p-5"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-navy font-bold text-sun">4</span><h3 class="mt-3 font-bold">View, print or save</h3><p class="mt-1 text-slate-700">Open your duplicate bill from the result page.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- TOOLS: white -->
+<section class="bg-white py-14">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 class="text-2xl font-bold sm:text-3xl">Bill tools</h2>
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      <a href="/bill-calculator" class="rounded-xl border border-line p-5 hover:border-sun hover:bg-tint"><h3 class="font-bold">Bill calculator</h3><p class="mt-1 text-slate-700">Estimate your bill from the units you used.</p></a>
+      <a href="/peak-hours-guide" class="rounded-xl border border-line p-5 hover:border-sun hover:bg-tint"><h3 class="font-bold">Peak hours chart</h3><p class="mt-1 text-slate-700">See peak and off-peak timings for your DISCO.</p></a>
+      <a href="/unit-rates-tariff" class="rounded-xl border border-line p-5 hover:border-sun hover:bg-tint"><h3 class="font-bold">Unit rates</h3><p class="mt-1 text-slate-700">Check the latest NEPRA slab prices.</p></a>
+    </div>
+  </div>
+</section>
+
+<!-- TAXES: tint, collapsed so the page stays short -->
+<section class="bg-tint py-14">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 class="text-2xl font-bold sm:text-3xl">What the charges on your bill mean</h2>
+    <p class="mt-2 max-w-2xl text-slate-700">These line items explain why your payable amount differs from units multiplied by the rate.</p>
+    <div class="mt-6 grid gap-3 md:grid-cols-2">
+      <details class="group rounded-xl bg-white p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">Fuel Price Adjustment (FPA)<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">A monthly adjustment for changes in generation fuel costs, applied per unit.</p></details>
+      <details class="group rounded-xl bg-white p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">Neelum Jhelum Surcharge<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">A separate amount linked to the Neelum–Jhelum hydropower project.</p></details>
+      <details class="group rounded-xl bg-white p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">Electricity duty<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">A provincial duty on consumption. The rate depends on your province and tariff.</p></details>
+      <details class="group rounded-xl bg-white p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">TV fee<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">A fixed monthly fee collected with the bill where it applies.</p></details>
+      <details class="group rounded-xl bg-white p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">GST / sales tax<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">Tax on the taxable parts of your bill, based on current rules.</p></details>
+      <details class="group rounded-xl bg-white p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">Quarterly tariff adjustment<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">A periodic correction that reconciles earlier rates with NEPRA decisions.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ: white -->
+<section class="bg-white py-14">
+  <div class="mx-auto max-w-3xl px-4">
+    <h2 class="text-2xl font-bold sm:text-3xl">Frequently asked questions</h2>
+    <div class="mt-6 space-y-3">
+      <details class="group rounded-xl border border-line p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">How can I check my bill without a reference number?<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">Use the consumer ID printed on your bill. If you have neither number, call the helpline or visit the subdivision office listed on an earlier bill.</p></details>
+      <details class="group rounded-xl border border-line p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">What is the difference between a reference number and a consumer ID?<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">The reference number has 14 digits. The consumer ID is shorter, usually 8 to 10 digits. Either one opens your duplicate bill.</p></details>
+      <details class="group rounded-xl border border-line p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">Can I pay through JazzCash or EasyPaisa?<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">Yes. Pay the amount from your duplicate bill in your wallet or bank app using the same reference number. This website does not collect payments.</p></details>
+      <details class="group rounded-xl border border-line p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">When do peak hour rates apply?<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">It depends on your DISCO, meter type and season. Check the <a href="/peak-hours-guide" class="font-semibold underline">peak hours chart</a> and confirm on your bill.</p></details>
+      <details class="group rounded-xl border border-line p-4"><summary class="flex cursor-pointer items-center justify-between font-bold">What if my bill is not updating?<span class="text-xl group-open:hidden" aria-hidden="true">+</span><span class="hidden text-xl group-open:inline" aria-hidden="true">&minus;</span></summary><p class="mt-2 text-slate-700">Wait for the billing cycle to close and check the company and number. Official systems sometimes lag by a day or two.</p></details>
+    </div>
+    <p class="mt-4"><a href="/faqs" class="font-semibold underline">See all questions</a></p>
+  </div>
+</section>
+
+<!-- GUIDES: tint -->
+<section class="bg-tint py-14">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 class="text-2xl font-bold sm:text-3xl">Guides</h2>
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      <a href="/guides/how-to-find-an-electricity-reference-number" class="rounded-xl bg-white p-5 hover:outline hover:outline-2 hover:outline-sun"><h3 class="font-bold">How to find your reference number</h3><p class="mt-1 text-slate-700">The 14-digit key to your duplicate bill.</p></a>
+      <a href="/guides/what-u-and-r-mean-on-a-bill" class="rounded-xl bg-white p-5 hover:outline hover:outline-2 hover:outline-sun"><h3 class="font-bold">What U and R mean</h3><p class="mt-1 text-slate-700">The letter after your number decides which record opens.</p></a>
+      <a href="/guides/which-disco-covers-your-city" class="rounded-xl bg-white p-5 hover:outline hover:outline-2 hover:outline-sun"><h3 class="font-bold">Which DISCO covers your city</h3><p class="mt-1 text-slate-700">Pick the right company before you search.</p></a>
+    </div>
+    <p class="mt-4"><a href="/guides" class="font-semibold underline">View all guides</a></p>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER: deepest navy -->
+<footer class="on-dark bg-navy-deep text-white">
+  <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="flex items-center gap-3">
+      <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-sun text-navy" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></span>
+      <div><p class="font-bold">Electricity Bill Checker Pakistan</p><p class="text-sm text-white/70">Free public utility helper for DISCO duplicate bills</p></div>
+    </div>
+
+    <p class="mt-6 max-w-3xl rounded-lg bg-navy p-4 text-sm text-white/80">This is a privately owned informational website. It is not affiliated with or endorsed by WAPDA, NEPRA or any distribution company. All names and logos belong to their respective owners.</p>
+
+    <div class="mt-10 grid gap-8 text-sm sm:grid-cols-2 lg:grid-cols-4">
+      <nav aria-label="Popular DISCOs"><p class="font-bold">Popular DISCOs</p><ul class="mt-3 space-y-2 text-white/75"><li><a class="hover:text-sun" href="/lesco-bill">LESCO bill online</a></li><li><a class="hover:text-sun" href="/mepco-bill">MEPCO bill online</a></li><li><a class="hover:text-sun" href="/iesco-bill">IESCO bill online</a></li><li><a class="hover:text-sun" href="/fesco-bill">FESCO bill online</a></li><li><a class="hover:text-sun" href="/kelectric-bill">K-Electric bill online</a></li></ul></nav>
+      <nav aria-label="Tools and guides"><p class="font-bold">Tools and guides</p><ul class="mt-3 space-y-2 text-white/75"><li><a class="hover:text-sun" href="/bill-calculator">Bill calculator</a></li><li><a class="hover:text-sun" href="/peak-hours-guide">Peak hours chart</a></li><li><a class="hover:text-sun" href="/unit-rates-tariff">Per unit tariff</a></li><li><a class="hover:text-sun" href="/online-bill-payment">Online bill payment</a></li><li><a class="hover:text-sun" href="/complaint-helpline">Helpline numbers</a></li></ul></nav>
+      <nav aria-label="Regions"><p class="font-bold">Regions</p><ul class="mt-3 space-y-2 text-white/75"><li><a class="hover:text-sun" href="/punjab-electricity-bills">Punjab</a></li><li><a class="hover:text-sun" href="/sindh-electricity-bills">Sindh</a></li><li><a class="hover:text-sun" href="/kpk-electricity-bills">KPK</a></li><li><a class="hover:text-sun" href="/balochistan-electricity-bills">Balochistan</a></li><li><a class="hover:text-sun" href="/kashmir-gb-electricity-bills">Kashmir and GB</a></li></ul></nav>
+      <nav aria-label="Legal"><p class="font-bold">Legal</p><ul class="mt-3 space-y-2 text-white/75"><li><a class="hover:text-sun" href="/about-us">About us</a></li><li><a class="hover:text-sun" href="/contact-us">Contact us</a></li><li><a class="hover:text-sun" href="/privacy-policy">Privacy policy</a></li><li><a class="hover:text-sun" href="/terms-and-conditions">Terms of service</a></li><li><a class="hover:text-sun" href="/disclaimer">Disclaimer</a></li></ul></nav>
+    </div>
+
+    <p class="mt-10 border-t border-white/15 pt-6 text-sm text-white/60">© 2026 WAPDA Bills. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  // Shows a loading state while the bill is fetched (the wait can be 10 to 20 seconds).
+  document.getElementById('bill-form').addEventListener('submit', function () {
+    var b = document.getElementById('submit-btn');
+    b.disabled = true;
+    b.textContent = 'Fetching your bill…';
+    document.getElementById('status').textContent = 'Contacting the distribution company. Please keep this page open.';
+  });
+</script>
+</body>
+</html>

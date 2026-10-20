@@ -110,7 +110,6 @@ public static class SiteNav
         yield return "/guides";
         yield return "/faqs";
         yield return "/offices";
-        yield return "/careers";
 
         foreach (var link in DiscoLandings.Concat(RegionLandings).Concat(ToolLinks).Concat(GuideLinks).Concat(LegalLinks))
         {

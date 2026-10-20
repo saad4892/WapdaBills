@@ -5,7 +5,7 @@
         || (href != "/" && path.StartsWith(href.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase));
 }
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" data-i18n="nav.skip">Skip to content</a>
 
 <header class="site-header" id="site-header">
     <div class="site-header__inner">
@@ -17,28 +17,25 @@
             </span>
             <span>
                 <strong>WAPDA Bills</strong>
-                <small>Pakistan electricity lookup</small>
+                <small data-i18n="brand.tag">Pakistan electricity lookup</small>
             </span>
             <img class="brand-logo-fallback" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E" width="1" height="1" alt="WAPDA Bills logo" title="WAPDA Bills" hidden />
         </a>
 
-        <button type="button"
-                class="nav-toggle"
-                id="nav-toggle"
-                aria-expanded="false"
-                aria-controls="mobile-drawer"
-                aria-label="Open menu">
-            <span class="nav-toggle__bars" aria-hidden="true">
-                <span></span><span></span><span></span>
-            </span>
-        </button>
-
         <nav class="primary-nav" id="primary-nav" aria-label="Primary">
-            <a class="primary-nav__link @(IsActive("/") ? "is-on" : null)" href="/">Home</a>
+            <a class="primary-nav__link @(IsActive("/") ? "is-on" : null)" href="/" data-i18n="nav.home">Home</a>
 
             @foreach (var menu in SiteNav.PrimaryMenus)
             {
                 var panelId = "menu-" + menu.Id;
+                var labelKey = menu.Id switch
+                {
+                    "discos" => "nav.discos",
+                    "regions" => "nav.regions",
+                    "tools" => "nav.tools",
+                    "guides" => "nav.guides",
+                    _ => ""
+                };
                 <div class="nav-item @(menu.Mega ? "nav-item--mega" : null)" data-nav-item>
                     <button type="button"
                             class="nav-trigger"
@@ -46,7 +43,7 @@
                             aria-expanded="false"
                             aria-haspopup="true"
                             aria-controls="@panelId">
-                        @menu.Label
+                        <span data-i18n="@labelKey">@menu.Label</span>
                         <span class="nav-caret" aria-hidden="true"></span>
                     </button>
                     <div class="nav-panel @(menu.Mega ? "nav-panel--mega" : null)"
@@ -92,6 +89,26 @@
                 </div>
             }
         </nav>
+
+        <div class="header-tools">
+            <div class="lang-switch" data-lang-switch role="group" aria-label="Language" data-i18n-aria="nav.lang">
+                <button type="button" class="lang-switch__btn" data-set-lang="en" aria-pressed="true" data-i18n="nav.lang.en">EN</button>
+                <span class="lang-switch__sep" aria-hidden="true">|</span>
+                <button type="button" class="lang-switch__btn" data-set-lang="ur" aria-pressed="false" data-i18n="nav.lang.ur">اردو</button>
+            </div>
+
+            <button type="button"
+                    class="nav-toggle"
+                    id="nav-toggle"
+                    aria-expanded="false"
+                    aria-controls="mobile-drawer"
+                    aria-label="Open menu"
+                    data-i18n-aria="nav.openMenu">
+                <span class="nav-toggle__bars" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </span>
+            </button>
+        </div>
     </div>
 </header>
 
@@ -102,26 +119,40 @@
        role="dialog"
        aria-modal="true"
        aria-label="Site menu"
+       data-i18n-aria="nav.menu"
        hidden>
     <div class="mobile-drawer__head">
-        <span class="mobile-drawer__title">Menu</span>
-        <button type="button" class="drawer-close" id="drawer-close" aria-label="Close menu">
+        <span class="mobile-drawer__title" data-i18n="nav.menu">Menu</span>
+        <div class="lang-switch lang-switch--drawer" data-lang-switch role="group" aria-label="Language" data-i18n-aria="nav.lang">
+            <button type="button" class="lang-switch__btn" data-set-lang="en" aria-pressed="true" data-i18n="nav.lang.en">EN</button>
+            <span class="lang-switch__sep" aria-hidden="true">|</span>
+            <button type="button" class="lang-switch__btn" data-set-lang="ur" aria-pressed="false" data-i18n="nav.lang.ur">اردو</button>
+        </div>
+        <button type="button" class="drawer-close" id="drawer-close" aria-label="Close menu" data-i18n-aria="nav.closeMenu">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
     <nav class="mobile-nav" aria-label="Mobile">
-        <a class="mobile-nav__link @(IsActive("/") ? "is-on" : null)" href="/">Home</a>
+        <a class="mobile-nav__link @(IsActive("/") ? "is-on" : null)" href="/" data-i18n="nav.home">Home</a>
 
         @foreach (var menu in SiteNav.PrimaryMenus)
         {
             var accordionId = "accordion-" + menu.Id;
+            var labelKey = menu.Id switch
+            {
+                "discos" => "nav.discos",
+                "regions" => "nav.regions",
+                "tools" => "nav.tools",
+                "guides" => "nav.guides",
+                _ => ""
+            };
             <div class="mobile-accordion" data-accordion>
                 <button type="button"
                         class="mobile-accordion__trigger"
                         aria-expanded="false"
                         aria-controls="@accordionId"
                         id="acc-trigger-@menu.Id">
-                    @menu.Label
+                    <span data-i18n="@labelKey">@menu.Label</span>
                     <span class="acc-icon" aria-hidden="true"></span>
                 </button>
                 <div class="mobile-accordion__panel" id="@accordionId" role="region" aria-labelledby="acc-trigger-@menu.Id" hidden>

@@ -9,16 +9,26 @@
     const searchByInput = document.getElementById("SearchBy");
     const number = document.getElementById("Number");
     const ruRow = document.getElementById("ru-row");
-    const keNote = document.getElementById("ke-note");
+    const keLine = document.getElementById("ke-line");
     const pitcFields = document.getElementById("pitc-fields");
     const pitcMeta = document.getElementById("pitc-meta");
     const submitBtn = document.getElementById("open-bill");
+    const advancedToggle = document.getElementById("advanced-toggle");
+    const advancedPanel = document.getElementById("advanced-panel");
 
     const modal = document.getElementById("ref-help-modal");
     const openHelp = document.getElementById("ref-help-open");
     const closeHelp = document.getElementById("ref-help-close");
     const dismissHelp = document.getElementById("ref-help-dismiss");
     let lastHelpFocus = null;
+
+    function t(key, fallback) {
+        if (window.WapdaI18n && typeof window.WapdaI18n.t === "function") {
+            const value = window.WapdaI18n.t(key);
+            if (value && value !== key) return value;
+        }
+        return fallback;
+    }
 
     function selectedOption() {
         if (!companySelect) return null;
@@ -43,30 +53,52 @@
         const option = selectedOption();
         const code = option && option.value ? option.value : "";
         const isPitc = !code || (option && option.dataset.pitc === "true");
+        const isKe = !!code && !isPitc;
 
         if (regionInput && option && option.dataset.region) {
             regionInput.value = option.dataset.region;
         }
 
-        if (keNote) {
-            keNote.hidden = isPitc;
-        }
         if (pitcFields) {
-            pitcFields.hidden = !isPitc && !!code;
+            pitcFields.hidden = isKe;
+        }
+        if (keLine) {
+            keLine.hidden = !isKe;
         }
         if (pitcMeta) {
-            pitcMeta.hidden = !isPitc && !!code;
+            pitcMeta.hidden = isKe;
         }
-        if (submitBtn) {
+        if (advancedToggle) {
+            advancedToggle.hidden = isKe;
+            if (isKe && advancedPanel && !advancedPanel.hidden) {
+                setAdvancedOpen(false);
+            }
+        }
+        if (submitBtn && !submitBtn.disabled) {
             if (!code) {
-                submitBtn.textContent = "Check Bill";
-            } else if (!isPitc) {
-                submitBtn.textContent = "Open K-Electric";
+                submitBtn.textContent = t("home.checkBill", "Check Bill");
+            } else if (isKe) {
+                submitBtn.textContent = t("home.openKe", "Open K-Electric");
             } else {
-                submitBtn.textContent = "Check Bill";
+                submitBtn.textContent = t("home.checkBill", "Check Bill");
             }
         }
         syncSearchBy();
+    }
+
+    function setAdvancedOpen(open) {
+        if (!advancedToggle || !advancedPanel) return;
+        advancedToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        advancedPanel.hidden = !open;
+        advancedToggle.classList.toggle("is-open", open);
+    }
+
+    if (advancedToggle && advancedPanel) {
+        setAdvancedOpen(false);
+        advancedToggle.addEventListener("click", function () {
+            const open = advancedToggle.getAttribute("aria-expanded") !== "true";
+            setAdvancedOpen(open);
+        });
     }
 
     function ensureAlert(message) {
@@ -123,7 +155,7 @@
         }
 
         submitBtn.disabled = true;
-        submitBtn.textContent = "Checking bill...";
+        submitBtn.textContent = t("home.checking", "Checking bill...");
     });
 
     function openModal() {
@@ -184,5 +216,6 @@
         }
     })();
 
+    document.addEventListener("wapda:langchange", syncCompany);
     syncCompany();
 })();

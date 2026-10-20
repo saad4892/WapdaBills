@@ -14,7 +14,6 @@ public static class SiteContent
         new("U and R code", "Why the small letter after the reference number changes the result.", "/guides/what-u-and-r-mean-on-a-bill"),
         new("FAQs", "Short answers on duplicate bills, customer IDs, and K-Electric.", "/faqs"),
         new("Office locations", "Headquarters city and service area for every distribution company.", "/offices"),
-        new("Career notices", "Where companies publish recruitment. This site does not take fees or CVs.", "/careers"),
         new("Guides", "Longer notes on reading a bill and avoiding fake job offers.", "/guides")
     ];
 
@@ -26,7 +25,6 @@ public static class SiteContent
         new("Does this include K-Electric?", "No. Karachi’s K-Electric uses a 13-digit account number on ke.com.pk. The other companies on this site use the WAPDA reference number."),
         new("Can I pay with the duplicate bill?", "The duplicate is a copy of the bill already issued for that reference number. Banks and wallet apps usually accept the reference number itself."),
         new("How do I find the nearest office?", "The subdivision office is printed on the bill. The Offices page lists each company’s headquarters city and the districts it serves."),
-        new("Are the career pages job ads?", "No. They explain where a company publishes its own notices. This site does not collect applications or payments."),
         new("How long does a bill search take?", "The company portal usually answers in 10 to 20 seconds. Leave the page open until the bill appears.")
     ];
 

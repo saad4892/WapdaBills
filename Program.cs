@@ -80,6 +80,11 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Careers removed from the public site; keep old URLs from breaking with a permanent redirect.
+app.MapGet("/careers", () => Results.Redirect("/", permanent: true));
+app.MapGet("/careers/{id:int}", () => Results.Redirect("/", permanent: true));
+
 app.MapStaticAssets();
 app.MapControllerRoute(
     name: "default",
