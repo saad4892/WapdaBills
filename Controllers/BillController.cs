@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -8,16 +9,18 @@ namespace WapdaBill.Controllers;
 
 public class BillController : Controller
 {
-    private static readonly HttpClient SnapsClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(30)
-    };
-
     private readonly PitcBillService _bills;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<BillController> _logger;
 
-    public BillController(PitcBillService bills)
+    public BillController(
+        PitcBillService bills,
+        IHttpClientFactory httpClientFactory,
+        ILogger<BillController> logger)
     {
         _bills = bills;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -163,21 +166,86 @@ public class BillController : Controller
         }
 
         var payload = JsonSerializer.Serialize(new { REF_NO = refNo, BILL_MONTH = billMonth });
-        using var message = new HttpRequestMessage(
-            HttpMethod.Post,
-            "https://usersnap.pitc.com.pk/api/SnapsForDuplicateBill/ToDuplicate")
+        var client = _httpClientFactory.CreateClient(PitcOutbound.SnapsClientName);
+        using var message = new HttpRequestMessage(HttpMethod.Post, PitcOutbound.SnapsUrl)
         {
             Content = new StringContent(payload, Encoding.UTF8, "application/json")
         };
         message.Headers.Accept.ParseAdd("application/json");
 
-        using var response = await SnapsClient.SendAsync(message, cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        return new ContentResult
+        var sw = Stopwatch.StartNew();
+        try
         {
-            StatusCode = (int)response.StatusCode,
-            Content = body,
-            ContentType = "application/json"
-        };
+            using var response = await client.SendAsync(message, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                PitcHttpLogging.LogOutboundFailure(
+                    _logger,
+                    new HttpRequestException(
+                        $"PITC snaps returned {(int)response.StatusCode}.",
+                        inner: null,
+                        statusCode: response.StatusCode),
+                    "snaps_proxy",
+                    "usersnap.pitc.com.pk",
+                    "/api/SnapsForDuplicateBill/ToDuplicate",
+                    companyCode: null,
+                    sw.ElapsedMilliseconds,
+                    response.StatusCode,
+                    body,
+                    requestAborted: false);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "PITC snaps proxy ok. ElapsedMs={ElapsedMs} StatusCode={StatusCode} RefLen={RefLen} MonthLen={MonthLen}",
+                    sw.ElapsedMilliseconds,
+                    (int)response.StatusCode,
+                    refNo.Length,
+                    billMonth.Length);
+            }
+
+            return new ContentResult
+            {
+                StatusCode = (int)response.StatusCode,
+                Content = body,
+                ContentType = "application/json"
+            };
+        }
+        catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+        {
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, "snaps_proxy", "usersnap.pitc.com.pk",
+                "/api/SnapsForDuplicateBill/ToDuplicate", null, sw.ElapsedMilliseconds,
+                null, null, requestAborted: true);
+            return StatusCode(499);
+        }
+        catch (OperationCanceledException ex)
+        {
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, "snaps_proxy", "usersnap.pitc.com.pk",
+                "/api/SnapsForDuplicateBill/ToDuplicate", null, sw.ElapsedMilliseconds,
+                null, null, requestAborted: false);
+            return new ContentResult
+            {
+                StatusCode = StatusCodes.Status504GatewayTimeout,
+                Content = """{"STATUS":0,"MESSAGE":"The duplicate-bill service timed out."}""",
+                ContentType = "application/json"
+            };
+        }
+        catch (HttpRequestException ex)
+        {
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, "snaps_proxy", "usersnap.pitc.com.pk",
+                "/api/SnapsForDuplicateBill/ToDuplicate", null, sw.ElapsedMilliseconds,
+                ex.StatusCode, null, requestAborted: false);
+            return new ContentResult
+            {
+                StatusCode = StatusCodes.Status502BadGateway,
+                Content = """{"STATUS":0,"MESSAGE":"The duplicate-bill service is unreachable."}""",
+                ContentType = "application/json"
+            };
+        }
     }
 }

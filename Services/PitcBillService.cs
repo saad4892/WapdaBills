@@ -1,5 +1,5 @@
+using System.Diagnostics;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using WapdaBill.Models;
@@ -8,7 +8,6 @@ namespace WapdaBill.Services;
 
 public sealed class PitcBillService
 {
-    private const string Portal = "https://bill.pitc.com.pk";
     private static readonly TimeSpan CacheFor = TimeSpan.FromMinutes(15);
 
     private readonly IMemoryCache _cache;
@@ -53,6 +52,7 @@ public sealed class PitcBillService
         string ru,
         CancellationToken cancellationToken)
     {
+        var sw = Stopwatch.StartNew();
         try
         {
             var html = await RequestBillAsync(company, number, ru, searchBy, postbackRadio: false, cancellationToken);
@@ -71,10 +71,22 @@ public sealed class PitcBillService
 
             if (!IsBill(html, number))
             {
+                _logger.LogInformation(
+                    "PITC bill not found. Company={Company} SearchBy={SearchBy} NumberLen={NumberLen} ElapsedMs={ElapsedMs}",
+                    company.Code,
+                    searchBy,
+                    number.Length,
+                    sw.ElapsedMilliseconds);
                 return Fail(company, number, searchBy, ru, NotFoundMessage(company, searchBy));
             }
 
             var summary = ParseSummary(html);
+            _logger.LogInformation(
+                "PITC bill fetched. Company={Company} SearchBy={SearchBy} NumberLen={NumberLen} ElapsedMs={ElapsedMs}",
+                company.Code,
+                searchBy,
+                number.Length,
+                sw.ElapsedMilliseconds);
             return new BillFetchResult
             {
                 Success = true,
@@ -86,23 +98,39 @@ public sealed class PitcBillService
                 Company = company
             };
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
         {
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, "bill_fetch", "bill.pitc.com.pk", company.Slug, company.Code,
+                sw.ElapsedMilliseconds, statusCode: null, responseBodyPreview: null, requestAborted: true);
+            return Fail(company, number, searchBy, ru, "The request was cancelled. Try again.");
+        }
+        catch (OperationCanceledException ex)
+        {
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, "bill_fetch", "bill.pitc.com.pk", company.Slug, company.Code,
+                sw.ElapsedMilliseconds, statusCode: null, responseBodyPreview: null, requestAborted: false);
             return Fail(company, number, searchBy, ru, "The PITC portal did not respond in time. Try again.");
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "PITC request failed for {Company}", company.Code);
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, "bill_fetch", "bill.pitc.com.pk", company.Slug, company.Code,
+                sw.ElapsedMilliseconds, ex.StatusCode, responseBodyPreview: null, requestAborted: false);
             return Fail(company, number, searchBy, ru, "The request did not reach the PITC portal. Check your connection and try again.");
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "PITC form could not be read for {Company}", company.Code);
+            _logger.LogWarning(
+                ex,
+                "PITC form could not be read. Company={Company} ElapsedMs={ElapsedMs}",
+                company.Code,
+                sw.ElapsedMilliseconds);
             return Fail(company, number, searchBy, ru, ex.Message);
         }
     }
 
-    private static async Task<string> RequestBillAsync(
+    private async Task<string> RequestBillAsync(
         DiscoCompany company,
         string number,
         string ru,
@@ -110,46 +138,63 @@ public sealed class PitcBillService
         bool postbackRadio,
         CancellationToken cancellationToken)
     {
-        var pageUrl = $"{Portal}/{company.Slug}";
+        var pageUrl = $"{PitcOutbound.PortalBaseUrl}/{company.Slug}";
+
+        // CookieContainer must be per lookup session; do not share via IHttpClientFactory pooling.
         using var handler = new HttpClientHandler
         {
             CookieContainer = new CookieContainer(),
-            AutomaticDecompression = DecompressionMethods.All,
-            AllowAutoRedirect = true
+            UseCookies = true,
+            AllowAutoRedirect = true,
+            AutomaticDecompression = DecompressionMethods.All
         };
-        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(40) };
-        client.DefaultRequestHeaders.TryAddWithoutValidation(
-            "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+        using var client = new HttpClient(handler)
+        {
+            Timeout = PitcOutbound.PortalTimeout
+        };
+        client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", PitcOutbound.UserAgent);
         client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
 
         using var get = await client.GetAsync(pageUrl, cancellationToken);
         var html = await get.Content.ReadAsStringAsync(cancellationToken);
         if (!get.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"PITC did not return the {company.ShortName} page ({(int)get.StatusCode}).");
+            throw new HttpRequestException(
+                $"PITC did not return the {company.ShortName} page ({(int)get.StatusCode}).",
+                inner: null,
+                statusCode: get.StatusCode);
         }
 
         if (postbackRadio)
         {
             var radioFields = BuildFields(html, number, ru, "appno", includeButton: false);
             radioFields["__EVENTTARGET"] = "rbSearchByList$1";
-            html = await PostFormAsync(client, pageUrl, radioFields, cancellationToken);
+            html = await PostFormAsync(client, pageUrl, radioFields, company.ShortName, cancellationToken);
         }
 
         var fields = BuildFields(html, number, ru, searchBy, includeButton: true);
-        return await PostFormAsync(client, pageUrl, fields, cancellationToken);
+        return await PostFormAsync(client, pageUrl, fields, company.ShortName, cancellationToken);
     }
 
     private static async Task<string> PostFormAsync(
         HttpClient client,
         string pageUrl,
         Dictionary<string, string> fields,
+        string companyShortName,
         CancellationToken cancellationToken)
     {
         using var content = new FormUrlEncodedContent(fields);
         using var response = await client.PostAsync(pageUrl, content, cancellationToken);
-        return await response.Content.ReadAsStringAsync(cancellationToken);
+        var html = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"PITC did not accept the {companyShortName} search ({(int)response.StatusCode}).",
+                inner: null,
+                statusCode: response.StatusCode);
+        }
+
+        return html;
     }
 
     private static Dictionary<string, string> BuildFields(
@@ -230,12 +275,12 @@ public sealed class PitcBillService
         html = Regex.Replace(
             html,
             @"(?<attr>\b(?:href|src|action)\s*=\s*)(?<q>[""'])/(?!/)",
-            "${attr}${q}" + Portal + "/",
+            "${attr}${q}" + PitcOutbound.PortalBaseUrl + "/",
             RegexOptions.IgnoreCase);
         html = Regex.Replace(
             html,
             @"url\(\s*(?<q>['""]?)/(?!/)",
-            "url(${q}" + Portal + "/",
+            "url(${q}" + PitcOutbound.PortalBaseUrl + "/",
             RegexOptions.IgnoreCase);
 
         const string hook = """

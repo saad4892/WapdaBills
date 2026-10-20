@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WapdaBill.Data;
@@ -24,6 +26,31 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<PitcBillService>();
+
+// Snaps proxy: shared typed HttpClient (no cookies). Bill HTML scrape keeps a per-request
+// CookieContainer in PitcBillService so concurrent lookups cannot leak session cookies.
+builder.Services.AddHttpClient(PitcOutbound.SnapsClientName, client =>
+{
+    client.Timeout = PitcOutbound.SnapsTimeout;
+    client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", PitcOutbound.UserAgent);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+}).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+{
+    AutomaticDecompression = DecompressionMethods.All,
+    ConnectTimeout = TimeSpan.FromSeconds(15)
+});
+
+builder.Services.AddHttpClient(PitcOutbound.PortalClientName, client =>
+{
+    client.Timeout = PitcOutbound.PortalTimeout;
+    client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", PitcOutbound.UserAgent);
+    client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
+}).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+{
+    AutomaticDecompression = DecompressionMethods.All,
+    AllowAutoRedirect = true,
+    ConnectTimeout = TimeSpan.FromSeconds(15)
+});
 
 var app = builder.Build();
 

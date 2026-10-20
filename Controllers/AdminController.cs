@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +18,21 @@ public class AdminController : Controller
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<AdminController> _logger;
 
-    public AdminController(AppDbContext db, IConfiguration config, IWebHostEnvironment env)
+    public AdminController(
+        AppDbContext db,
+        IConfiguration config,
+        IWebHostEnvironment env,
+        IHttpClientFactory httpClientFactory,
+        ILogger<AdminController> logger)
     {
         _db = db;
         _config = config;
         _env = env;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     [HttpGet("/admin")]
@@ -82,6 +93,122 @@ public class AdminController : Controller
     {
         await HttpContext.SignOutAsync();
         return RedirectToAction(nameof(Login));
+    }
+
+    /// <summary>
+    /// Admin-only outbound connectivity probe for MonsterASP / PITC diagnosis.
+    /// Does not accept or echo consumer bill numbers.
+    /// </summary>
+    [HttpGet("/admin/pitc-check")]
+    public async Task<IActionResult> PitcCheck(CancellationToken cancellationToken)
+    {
+        var portal = await ProbeAsync(
+            "portal_get",
+            PitcOutbound.PortalClientName,
+            $"{PitcOutbound.PortalBaseUrl}/mepcobill",
+            HttpMethod.Get,
+            content: null,
+            cancellationToken);
+
+        var snaps = await ProbeAsync(
+            "snaps_post",
+            PitcOutbound.SnapsClientName,
+            PitcOutbound.SnapsUrl,
+            HttpMethod.Post,
+            new StringContent(
+                """{"REF_NO":"00000000000000","BILL_MONTH":"01-2020"}""",
+                Encoding.UTF8,
+                "application/json"),
+            cancellationToken);
+
+        _logger.LogInformation(
+            "Admin PITC check. PortalOk={PortalOk} PortalCategory={PortalCategory} PortalMs={PortalMs} " +
+            "SnapsOk={SnapsOk} SnapsCategory={SnapsCategory} SnapsMs={SnapsMs}",
+            portal.ReachedHost,
+            portal.Category,
+            portal.ElapsedMs,
+            snaps.ReachedHost,
+            snaps.Category,
+            snaps.ElapsedMs);
+
+        return Json(new
+        {
+            checkedAtUtc = DateTime.UtcNow,
+            environment = _env.EnvironmentName,
+            portal,
+            snaps,
+            hostingHint = portal.ReachedHost && snaps.ReachedHost
+                ? "Outbound HTTPS to PITC works from this host."
+                : "Outbound HTTPS to PITC failed from this host. Ask MonsterASP to allow outbound HTTPS to bill.pitc.com.pk and usersnap.pitc.com.pk (ports 443), and check DNS/TLS from the app pool."
+        });
+    }
+
+    private sealed record PitcProbeResult(
+        string Operation,
+        string Host,
+        string Path,
+        bool ReachedHost,
+        int? StatusCode,
+        long ElapsedMs,
+        string Category,
+        string? BodyPreview = null,
+        string? ExceptionType = null,
+        string? Message = null,
+        string? Inner = null);
+
+    private async Task<PitcProbeResult> ProbeAsync(
+        string operation,
+        string clientName,
+        string url,
+        HttpMethod method,
+        HttpContent? content,
+        CancellationToken cancellationToken)
+    {
+        var uri = new Uri(url);
+        var client = _httpClientFactory.CreateClient(clientName);
+        using var request = new HttpRequestMessage(method, uri) { Content = content };
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            var preview = body.Length > 180 || body.Contains('<', StringComparison.Ordinal)
+                ? $"(omitted len={body.Length})"
+                : body;
+
+            return new PitcProbeResult(
+                operation,
+                uri.Host,
+                uri.AbsolutePath,
+                ReachedHost: true,
+                (int)response.StatusCode,
+                sw.ElapsedMilliseconds,
+                response.IsSuccessStatusCode ? "ok" : ((int)response.StatusCode >= 500 ? "http_5xx" : "http_4xx"),
+                BodyPreview: preview);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+        {
+            var category = PitcHttpLogging.Classify(ex, statusCode: null, requestAborted: cancellationToken.IsCancellationRequested);
+            PitcHttpLogging.LogOutboundFailure(
+                _logger, ex, operation, uri.Host, uri.AbsolutePath, null,
+                sw.ElapsedMilliseconds, null, null, cancellationToken.IsCancellationRequested);
+
+            var inner = ex.InnerException is null
+                ? null
+                : $"{ex.InnerException.GetType().Name}: {(ex.InnerException.Message.Length > 200 ? ex.InnerException.Message[..200] + "…" : ex.InnerException.Message)}";
+
+            return new PitcProbeResult(
+                operation,
+                uri.Host,
+                uri.AbsolutePath,
+                ReachedHost: false,
+                StatusCode: null,
+                sw.ElapsedMilliseconds,
+                category,
+                ExceptionType: ex.GetType().FullName,
+                Message: ex.Message.Length > 240 ? ex.Message[..240] + "…" : ex.Message,
+                Inner: inner);
+        }
     }
 
     [HttpGet("/admin/guides")]
