@@ -1,5 +1,9 @@
 @model BlogPost
-
+@{
+    var faqs = ViewBag.GuideFaqs as IReadOnlyList<WapdaBill.Models.Cms.GuideFaq> ?? Array.Empty<WapdaBill.Models.Cms.GuideFaq>();
+    var media = ViewBag.MediaAssets as IReadOnlyList<WapdaBill.Models.Cms.MediaAsset> ?? Array.Empty<WapdaBill.Models.Cms.MediaAsset>();
+}
+@await Html.PartialAsync("_CmsNav")
 <section class="page-card admin-card">
     <p class="eyebrow">Guide</p>
     <h1>@(Model.Id == 0 ? "New guide" : "Edit guide")</h1>
@@ -7,7 +11,7 @@
     {
         <div class="alert" asp-validation-summary="All"></div>
     }
-        <form method="post" enctype="multipart/form-data" action="/admin/guides/edit">
+    <form method="post" enctype="multipart/form-data" action="/admin/guides/edit@(Model.Id == 0 ? "" : "/" + Model.Id)">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="ImagePath" />
@@ -24,14 +28,38 @@
         <textarea class="number text-area" asp-for="MetaDescription" rows="3"></textarea>
         <label class="field-label" asp-for="MetaKeywords">Keywords</label>
         <input class="number" asp-for="MetaKeywords" />
-        <label class="field-label" for="cover">Image</label>
+        <label class="field-label" for="cover">Cover image upload</label>
         <input id="cover" name="cover" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        <p class="hint">Or pick from the <a href="/admin/media">media library</a> and paste the path below.</p>
+        <label class="field-label" asp-for="ImagePath">Image path</label>
+        <input class="number" asp-for="ImagePath" placeholder="/media/...." list="media-paths" />
+        <datalist id="media-paths">
+            @foreach (var asset in media)
+            {
+                <option value="@asset.StoragePath">@asset.AltText</option>
+            }
+        </datalist>
         @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
         {
             <label class="check-line"><input type="checkbox" name="removeImage" value="true" /> Remove current image</label>
             <img class="admin-thumb" src="@Model.ImagePath" alt="" />
         }
         <label class="check-line"><input asp-for="IsPublished" /> Published</label>
+
+        <h2>Guide FAQs</h2>
+        <p class="hint">Optional Q&amp;A shown under the article. Leave blank rows empty.</p>
+        <div id="faq-rows">
+            @for (var i = 0; i < Math.Max(faqs.Count, 2); i++)
+            {
+                var faq = i < faqs.Count ? faqs[i] : null;
+                <div class="faq-admin-row">
+                    <input class="number" name="faqQuestion" placeholder="Question" value="@(faq?.Question)" />
+                    <textarea class="number text-area" name="faqAnswer" rows="2" placeholder="Answer (HTML allowed, sanitized)">@(faq?.AnswerHtml)</textarea>
+                </div>
+            }
+        </div>
+        <button type="button" class="btn btn-ghost" id="add-faq-row">Add FAQ row</button>
+
         <div class="actions">
             <button class="btn btn-gold" type="submit">Save guide</button>
             <a class="btn btn-ghost" href="/admin/guides">Cancel</a>
@@ -45,3 +73,17 @@
         </form>
     }
 </section>
+<script>
+(function () {
+  var btn = document.getElementById('add-faq-row');
+  var host = document.getElementById('faq-rows');
+  if (!btn || !host) return;
+  btn.addEventListener('click', function () {
+    var wrap = document.createElement('div');
+    wrap.className = 'faq-admin-row';
+    wrap.innerHTML = '<input class="number" name="faqQuestion" placeholder="Question" />' +
+      '<textarea class="number text-area" name="faqAnswer" rows="2" placeholder="Answer (HTML allowed, sanitized)"></textarea>';
+    host.appendChild(wrap);
+  });
+})();
+</script>

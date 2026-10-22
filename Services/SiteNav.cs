@@ -7,12 +7,25 @@ public sealed record NavLink(
     string? CompanyCode = null,
     string? RegionKey = null);
 
-public sealed record NavGroup(string Id, string Label, IReadOnlyList<NavLink> Links, bool Mega = false);
+public sealed record NavGroup(string Id, string Label, IReadOnlyList<NavLink> Links, bool Mega = false, string? HubHref = null);
 
 public sealed record FooterColumn(string Title, IReadOnlyList<NavLink> Links);
 
+public sealed record SocialLink(string Id, string Label, string Href);
+
 public static class SiteNav
 {
+    /// <summary>Placeholder social URLs — replace in one place when profiles are ready.</summary>
+    public static readonly IReadOnlyList<SocialLink> SocialLinks =
+    [
+        new("facebook", "Facebook", "https://www.facebook.com/"),
+        new("instagram", "Instagram", "https://www.instagram.com/"),
+        new("x", "X", "https://x.com/"),
+        new("tiktok", "TikTok", "https://www.tiktok.com/"),
+        new("pinterest", "Pinterest", "https://www.pinterest.com/"),
+        new("youtube", "YouTube", "https://www.youtube.com/")
+    ];
+
     public static readonly IReadOnlyList<NavLink> DiscoLandings =
     [
         new("LESCO Bill Online", "/lesco-bill", "Lahore, Sheikhupura, Kasur, Okara", "lesco", "Punjab"),
@@ -67,7 +80,7 @@ public static class SiteNav
         new("discos", "DISCOs", DiscoLandings, Mega: true),
         new("regions", "By Region", RegionLandings),
         new("tools", "Calculators & Utilities", ToolLinks),
-        new("guides", "Guides & Support", GuideLinks)
+        new("guides", "Guides & Support", GuideLinks, HubHref: "/guides")
     ];
 
     public static readonly IReadOnlyList<FooterColumn> FooterColumns =

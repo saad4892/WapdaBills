@@ -1,16 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using WapdaBill.Data;
 
 namespace WapdaBill.Services;
 
 public class SeoFilter : IAsyncActionFilter
 {
-    private readonly AppDbContext _db;
+    private readonly CmsQuery _cms;
 
-    public SeoFilter(AppDbContext db)
+    public SeoFilter(CmsQuery cms)
     {
-        _db = db;
+        _cms = cms;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -21,7 +20,7 @@ public class SeoFilter : IAsyncActionFilter
             return;
         }
 
-        var settings = await _db.SiteSettings.FindAsync(1);
+        var settings = await _cms.GetSettingsAsync();
         if (settings is null)
         {
             return;

@@ -1,20 +1,41 @@
+@inject IConfiguration Config
 @{
     var link = (NavLink)ViewData["NavLink"]!;
     var company = ViewData["Company"] as DiscoCompany;
+    var cmsDisco = ViewData["CmsDisco"] as WapdaBill.Models.Cms.DiscoEntity;
     var checkerUrl = (string)ViewData["CheckerUrl"]!;
+    var origin = SiteUrls.PublicOrigin(Config, Context.Request);
+    var crumbs = new List<(string Name, string Path)>
+    {
+        ("Home", "/"),
+        (link.Title, link.Href)
+    };
+    var breadcrumbJson = JsonLd.Serialize(JsonLd.BreadcrumbList(origin, crumbs));
 }
 
 <section class="page-intro seo-landing">
     <p class="eyebrow">DISCO bill checker</p>
     <h1>@link.Title</h1>
-    <p>@(company?.FullName ?? link.Title). @(link.Description).</p>
+    @if (!string.IsNullOrWhiteSpace(cmsDisco?.IntroHtml))
+    {
+        @Html.Raw(cmsDisco.IntroHtml)
+    }
+    else
+    {
+        <p>@(company?.FullName ?? link.Title). @(link.Description).</p>
+    }
     @if (company is not null)
     {
-        <p class="seo-coverage"><strong>Coverage:</strong> @company.Coverage</p>
+        <p class="seo-coverage"><strong>Coverage:</strong> @(string.IsNullOrWhiteSpace(cmsDisco?.Coverage) ? company.Coverage : cmsDisco!.Coverage)</p>
+        <p>Enter your @company.ShortName reference number or consumer ID in the <a href="@checkerUrl">@company.ShortName bill checker</a> to open a live duplicate bill. Need help locating the 14-digit number? Read the <a href="/how-to-check-bill">reference number guide</a>.</p>
     }
     else
     {
         <p class="seo-coverage">AJKED bills are issued outside the standard WAPDA/PITC duplicate-bill flow used by mainland DISCOs. Use official AJK electricity channels for account and payment questions, then return here for other Pakistan DISCOs.</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(cmsDisco?.BodyHtml))
+    {
+        <div class="legal-body">@Html.Raw(cmsDisco.BodyHtml)</div>
     }
     <div class="actions">
         @if (!string.IsNullOrWhiteSpace(checkerUrl) && company is not null)
@@ -38,3 +59,7 @@
         }
     </ul>
 </section>
+
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(breadcrumbJson)
+@Html.Raw("</script>")

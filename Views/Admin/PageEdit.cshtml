@@ -1,0 +1,39 @@
+@model WapdaBill.Models.Cms.ContentPage
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>@(Model.Id == 0 ? "New page" : "Edit page")</h1></section>
+<form class="admin-form" method="post" asp-antiforgery="true">
+    <label>Title</label><input name="Title" value="@Model.Title" required />
+    <label>Slug</label><input name="Slug" value="@Model.Slug" />
+    <label>H1</label><input name="H1" value="@Model.H1" />
+    <label>Template</label>
+    <select name="Template">
+        @foreach (var t in new[] { "Generic", "Legal", "Tool", "Info", "GuideStatic" })
+        {
+            if (Model.Template == t) { <option value="@t" selected>@t</option> }
+            else { <option value="@t">@t</option> }
+        }
+    </select>
+    <label>Intro HTML</label><textarea name="IntroHtml">@Model.IntroHtml</textarea>
+    <label>Body HTML</label><textarea name="BodyHtml" style="min-height:260px">@Model.BodyHtml</textarea>
+    <label>Meta title</label><input name="MetaTitle" value="@Model.MetaTitle" />
+    <label>Meta description</label><textarea name="MetaDescription">@Model.MetaDescription</textarea>
+    <label>Meta keywords</label><input name="MetaKeywords" value="@Model.MetaKeywords" />
+    <label>Canonical path</label><input name="CanonicalPath" value="@Model.CanonicalPath" />
+    <label>Robots</label><input name="Robots" value="@Model.Robots" />
+    <label>OG image media Id</label><input name="OgImageMediaId" value="@Model.OgImageMediaId" />
+    <label><input type="checkbox" name="IsPublished" value="true" @(Model.IsPublished ? "checked" : null) /> Published</label>
+    <p><button class="btn btn-gold" type="submit">Save page</button></p>
+</form>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+<div id="quill-body" style="max-width:720px;min-height:200px;background:#fff;margin:8px 0"></div>
+<script>
+(function(){
+  var ta=document.querySelector('textarea[name=BodyHtml]');
+  if(!ta||!window.Quill) return;
+  var q=new Quill('#quill-body',{theme:'snow',modules:{toolbar:[[ 'bold','italic' ],[{header:[2,3,false]}],[{list:'ordered'},{list:'bullet'}],['link'],['clean']]}});
+  q.root.innerHTML=ta.value||'';
+  ta.style.display='none';
+  document.querySelector('form').addEventListener('submit',function(){ta.value=q.root.innerHTML;});
+})();
+</script>

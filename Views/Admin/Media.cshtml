@@ -1,0 +1,31 @@
+@model IReadOnlyList<WapdaBill.Models.Cms.MediaAsset>
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Media library</h1></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+@if (TempData["Error"] is string err) { <p class="admin-flash err">@err</p> }
+<form class="admin-form" method="post" action="/admin/media/upload" enctype="multipart/form-data" asp-antiforgery="true">
+    <label>Upload image</label>
+    <input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" required />
+    <label>Alt text</label>
+    <input name="altText" />
+    <p><button class="btn btn-gold" type="submit">Upload</button></p>
+</form>
+<table class="admin-table">
+    <thead><tr><th>Id</th><th>Preview</th><th>Path</th><th>Alt</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var m in Model)
+    {
+        <tr>
+            <td>@m.Id</td>
+            <td><img src="@m.StoragePath" alt="@m.AltText" width="64" height="64" style="object-fit:cover" /></td>
+            <td>@m.StoragePath</td>
+            <td>@m.AltText</td>
+            <td>
+                <form method="post" action="/admin/media/delete/@m.Id" asp-antiforgery="true" onsubmit="return confirm('Delete this file?');">
+                    <button type="submit" class="btn btn-ghost">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

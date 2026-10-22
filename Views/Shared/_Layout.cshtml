@@ -1,8 +1,39 @@
-﻿<!DOCTYPE html>
+﻿@inject IConfiguration Config
+@inject CmsQuery Cms
+@{
+    var settings = await Cms.GetSettingsAsync();
+    var title = (ViewData["Title"] as string) ?? settings?.SiteTitle ?? "WAPDA Bills";
+    var description = (ViewData["Description"] as string)
+        ?? settings?.MetaDescription
+        ?? "Check electricity bills for every WAPDA distribution company in Pakistan.";
+    var keywords = (ViewData["Keywords"] as string)
+        ?? settings?.MetaKeywords
+        ?? "Pakistan electricity bill, LESCO, MEPCO, FESCO, WAPDA";
+    var canonical = SiteUrls.Absolute(Config, Context.Request);
+    var ogImage = (ViewData["OgImage"] as string) ?? SiteUrls.DefaultOgImage(Config, Context.Request);
+    var ogType = (ViewData["OgType"] as string) ?? "website";
+    var siteName = settings?.SiteName ?? "WAPDA Bills";
+    var path = Context.Request.Path.Value ?? "/";
+    var robots = ViewData["Robots"] as string;
+    if (string.IsNullOrWhiteSpace(robots))
+    {
+        var noIndex =
+            path.StartsWith("/admin", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/Bill/Result", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/Bill/Missing", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/Bill/Ke", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/Bill/Document", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(path, "/Home/Error", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(Context.Request.Query["sent"], "true", StringComparison.OrdinalIgnoreCase);
+        robots = noIndex ? "noindex, nofollow" : "index, follow";
+    }
+}
+<!DOCTYPE html>
 <html lang="en" dir="ltr" class="lang-en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0B2A5B" />
     <script>
         (function () {
             try {
@@ -15,27 +46,43 @@
             } catch (e) { /* ignore */ }
         })();
     </script>
-    <title>@(ViewData["Title"] ?? "WAPDA Bills")</title>
-    <meta name="description" content="@(ViewData["Description"] ?? "Check electricity bills for every WAPDA distribution company in Pakistan.")" />
-    <meta name="keywords" content="@(ViewData["Keywords"] ?? "Pakistan electricity bill, LESCO, MEPCO, FESCO, WAPDA")" />
-    @if (Context.Request.Path.StartsWithSegments("/admin"))
-    {
-        <meta name="robots" content="noindex, nofollow" />
-    }
-    else
-    {
-        <meta name="robots" content="index, follow" />
-    }
-    <meta property="og:title" content="@(ViewData["Title"] ?? "WAPDA Bills")" />
-    <meta property="og:description" content="@(ViewData["Description"] ?? "Check electricity bills for every WAPDA distribution company in Pakistan.")" />
-    <meta property="og:type" content="website" />
+    <title>@title</title>
+    <meta name="description" content="@description" />
+    <meta name="keywords" content="@keywords" />
+    <meta name="robots" content="@robots" />
+    <link rel="canonical" href="@canonical" />
+    <meta property="og:title" content="@title" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:type" content="@ogType" />
     <meta property="og:locale" content="en_PK" />
-    <meta property="og:url" content="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
-    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")" />
+    <meta property="og:url" content="@canonical" />
+    <meta property="og:site_name" content="@siteName" />
+    <meta property="og:image" content="@ogImage" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@title" />
+    <meta name="twitter:description" content="@description" />
+    <meta name="twitter:image" content="@ogImage" />
+    @if (!string.IsNullOrWhiteSpace(settings?.GoogleSearchConsoleVerification))
+    {
+        <meta name="google-site-verification" content="@settings.GoogleSearchConsoleVerification" />
+    }
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/favicon.svg" asp-append-version="true" />
+    <link rel="manifest" href="~/site.webmanifest" asp-append-version="true" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (!string.IsNullOrWhiteSpace(settings?.GtmContainerId))
+    {
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','@settings.GtmContainerId');</script>
+    }
+    @if (!string.IsNullOrWhiteSpace(settings?.Ga4MeasurementId))
+    {
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@settings.Ga4MeasurementId"></script>
+        <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','@settings.Ga4MeasurementId');</script>
+    }
+    @await RenderSectionAsync("Head", required: false)
 </head>
 <body>
     @if (User.Identity?.IsAuthenticated == true)
@@ -45,7 +92,9 @@
                 <span>Admin</span>
                 <a href="/admin">Desk</a>
                 <a href="/admin/guides">Guides</a>
-                <a href="/admin/seo">Search</a>
+                <a href="/admin/pages">Pages</a>
+                <a href="/admin/media">Media</a>
+                <a href="/admin/settings">Settings</a>
                 <form method="post" action="/admin/logout">
                     @Html.AntiForgeryToken()
                     <button type="submit">Log out</button>
@@ -62,9 +111,9 @@
 
     @await Html.PartialAsync("_SiteFooter")
 
-    <script src="~/js/nav.js" asp-append-version="true"></script>
-    <script src="~/js/i18n.js" asp-append-version="true"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/nav.js" asp-append-version="true" defer></script>
+    <script src="~/js/i18n.js" asp-append-version="true" defer></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

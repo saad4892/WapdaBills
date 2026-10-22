@@ -1,0 +1,36 @@
+@await Html.PartialAsync("_CmsNav")
+@{
+    var rules = (IReadOnlyList<WapdaBill.Models.Cms.RedirectRule>)ViewBag.Rules;
+    var misses = (IReadOnlyList<WapdaBill.Models.Cms.NotFoundLog>)ViewBag.NotFound;
+}
+<section class="page-intro"><h1>Redirects &amp; 404 log</h1></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+@if (TempData["Error"] is string err) { <p class="admin-flash err">@err</p> }
+<form class="admin-form" method="post" action="/admin/redirects" asp-antiforgery="true">
+    <label>From path</label><input name="fromPath" placeholder="/old-path" required />
+    <label>To URL</label><input name="toUrl" placeholder="/new-path" required />
+    <label>Status</label>
+    <select name="statusCode"><option value="301">301</option><option value="302">302</option></select>
+    <label><input type="checkbox" name="isActive" value="true" checked /> Active</label>
+    <p><button class="btn btn-gold" type="submit">Add redirect</button></p>
+</form>
+<h2>Rules</h2>
+<table class="admin-table">
+    <thead><tr><th>From</th><th>To</th><th>Code</th><th>Active</th></tr></thead>
+    <tbody>
+    @foreach (var r in rules)
+    {
+        <tr><td>@r.FromPath</td><td>@r.ToUrl</td><td>@r.StatusCode</td><td>@r.IsActive</td></tr>
+    }
+    </tbody>
+</table>
+<h2>Recent 404s</h2>
+<table class="admin-table">
+    <thead><tr><th>When (UTC)</th><th>Path</th></tr></thead>
+    <tbody>
+    @foreach (var n in misses)
+    {
+        <tr><td>@n.OccurredAt.ToString("u")</td><td>@n.Path</td></tr>
+    }
+    </tbody>
+</table>

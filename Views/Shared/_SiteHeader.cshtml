@@ -1,8 +1,27 @@
+@inject CmsQuery Cms
 @{
     var path = Context.Request.Path.Value ?? "/";
     bool IsActive(string href) =>
         string.Equals(path.TrimEnd('/'), href.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
         || (href != "/" && path.StartsWith(href.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase));
+
+    var cmsMenus = await Cms.GetNavMenusAsync();
+    var useCms = cmsMenus.Count > 0;
+
+    string? HubHref(string key) => key switch
+    {
+        "guides" => "/guides",
+        _ => null
+    };
+
+    string LabelKey(string key) => key switch
+    {
+        "discos" => "nav.discos",
+        "regions" => "nav.regions",
+        "tools" => "nav.tools",
+        "guides" => "nav.guides",
+        _ => ""
+    };
 }
 
 <a class="skip-link" href="#main" data-i18n="nav.skip">Skip to content</a>
@@ -25,68 +44,155 @@
         <nav class="primary-nav" id="primary-nav" aria-label="Primary">
             <a class="primary-nav__link @(IsActive("/") ? "is-on" : null)" href="/" data-i18n="nav.home">Home</a>
 
-            @foreach (var menu in SiteNav.PrimaryMenus)
+            @if (useCms)
             {
-                var panelId = "menu-" + menu.Id;
-                var labelKey = menu.Id switch
+                @foreach (var menu in cmsMenus)
                 {
-                    "discos" => "nav.discos",
-                    "regions" => "nav.regions",
-                    "tools" => "nav.tools",
-                    "guides" => "nav.guides",
-                    _ => ""
-                };
-                <div class="nav-item @(menu.Mega ? "nav-item--mega" : null)" data-nav-item>
-                    <button type="button"
-                            class="nav-trigger"
-                            id="trigger-@menu.Id"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            aria-controls="@panelId">
-                        <span data-i18n="@labelKey">@menu.Label</span>
-                        <span class="nav-caret" aria-hidden="true"></span>
-                    </button>
-                    <div class="nav-panel @(menu.Mega ? "nav-panel--mega" : null)"
-                         id="@panelId"
-                         role="region"
-                         aria-labelledby="trigger-@menu.Id"
-                         hidden>
-                        @if (menu.Mega)
+                    var panelId = "menu-" + menu.Key;
+                    var hubHref = HubHref(menu.Key);
+                    var mega = menu.Key == "discos" || menu.Items.Any(i => i.IsMega);
+                    var labelKey = LabelKey(menu.Key);
+                    <div class="nav-item @(mega ? "nav-item--mega" : null)" data-nav-item>
+                        @if (!string.IsNullOrWhiteSpace(hubHref))
                         {
-                            <ul class="mega-grid">
-                                @foreach (var item in menu.Links)
-                                {
-                                    <li>
-                                        <a href="@item.Href" class="mega-link @(IsActive(item.Href) ? "is-on" : null)">
-                                            <strong>@item.Title</strong>
-                                            @if (!string.IsNullOrWhiteSpace(item.Description))
-                                            {
-                                                <span>@item.Description</span>
-                                            }
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
+                            <a href="@hubHref"
+                               class="nav-trigger @(IsActive(hubHref) ? "is-on" : null)"
+                               id="trigger-@menu.Key"
+                               aria-expanded="false"
+                               aria-haspopup="true"
+                               aria-controls="@panelId">
+                                <span data-i18n="@labelKey">@menu.Label</span>
+                                <span class="nav-caret" aria-hidden="true"></span>
+                            </a>
                         }
                         else
                         {
-                            <ul class="dropdown-list">
-                                @foreach (var item in menu.Links)
-                                {
-                                    <li>
-                                        <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">
-                                            <strong>@item.Title</strong>
-                                            @if (!string.IsNullOrWhiteSpace(item.Description))
-                                            {
-                                                <span>@item.Description</span>
-                                            }
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
+                            <button type="button"
+                                    class="nav-trigger"
+                                    id="trigger-@menu.Key"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    aria-controls="@panelId">
+                                <span data-i18n="@labelKey">@menu.Label</span>
+                                <span class="nav-caret" aria-hidden="true"></span>
+                            </button>
                         }
+                        <div class="nav-panel @(mega ? "nav-panel--mega" : null)"
+                             id="@panelId"
+                             role="region"
+                             aria-labelledby="trigger-@menu.Key"
+                             hidden>
+                            @if (mega)
+                            {
+                                <ul class="mega-grid">
+                                    @foreach (var item in menu.Items)
+                                    {
+                                        <li>
+                                            <a href="@item.Href" class="mega-link @(IsActive(item.Href) ? "is-on" : null)">
+                                                <strong>@item.Title</strong>
+                                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                                {
+                                                    <span>@item.Description</span>
+                                                }
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <ul class="dropdown-list">
+                                    @foreach (var item in menu.Items)
+                                    {
+                                        <li>
+                                            <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">
+                                                <strong>@item.Title</strong>
+                                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                                {
+                                                    <span>@item.Description</span>
+                                                }
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
                     </div>
-                </div>
+                }
+            }
+            else
+            {
+                @foreach (var menu in SiteNav.PrimaryMenus)
+                {
+                    var panelId = "menu-" + menu.Id;
+                    var labelKey = LabelKey(menu.Id);
+                    <div class="nav-item @(menu.Mega ? "nav-item--mega" : null)" data-nav-item>
+                        @if (!string.IsNullOrWhiteSpace(menu.HubHref))
+                        {
+                            <a href="@menu.HubHref"
+                               class="nav-trigger @(IsActive(menu.HubHref) ? "is-on" : null)"
+                               id="trigger-@menu.Id"
+                               aria-expanded="false"
+                               aria-haspopup="true"
+                               aria-controls="@panelId">
+                                <span data-i18n="@labelKey">@menu.Label</span>
+                                <span class="nav-caret" aria-hidden="true"></span>
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="nav-trigger"
+                                    id="trigger-@menu.Id"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                    aria-controls="@panelId">
+                                <span data-i18n="@labelKey">@menu.Label</span>
+                                <span class="nav-caret" aria-hidden="true"></span>
+                            </button>
+                        }
+                        <div class="nav-panel @(menu.Mega ? "nav-panel--mega" : null)"
+                             id="@panelId"
+                             role="region"
+                             aria-labelledby="trigger-@menu.Id"
+                             hidden>
+                            @if (menu.Mega)
+                            {
+                                <ul class="mega-grid">
+                                    @foreach (var item in menu.Links)
+                                    {
+                                        <li>
+                                            <a href="@item.Href" class="mega-link @(IsActive(item.Href) ? "is-on" : null)">
+                                                <strong>@item.Title</strong>
+                                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                                {
+                                                    <span>@item.Description</span>
+                                                }
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <ul class="dropdown-list">
+                                    @foreach (var item in menu.Links)
+                                    {
+                                        <li>
+                                            <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">
+                                                <strong>@item.Title</strong>
+                                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                                {
+                                                    <span>@item.Description</span>
+                                                }
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </div>
+                }
             }
         </nav>
 
@@ -135,33 +241,53 @@
     <nav class="mobile-nav" aria-label="Mobile">
         <a class="mobile-nav__link @(IsActive("/") ? "is-on" : null)" href="/" data-i18n="nav.home">Home</a>
 
-        @foreach (var menu in SiteNav.PrimaryMenus)
+        @if (useCms)
         {
-            var accordionId = "accordion-" + menu.Id;
-            var labelKey = menu.Id switch
+            @foreach (var menu in cmsMenus)
             {
-                "discos" => "nav.discos",
-                "regions" => "nav.regions",
-                "tools" => "nav.tools",
-                "guides" => "nav.guides",
-                _ => ""
-            };
-            <div class="mobile-accordion" data-accordion>
-                <button type="button"
-                        class="mobile-accordion__trigger"
-                        aria-expanded="false"
-                        aria-controls="@accordionId"
-                        id="acc-trigger-@menu.Id">
-                    <span data-i18n="@labelKey">@menu.Label</span>
-                    <span class="acc-icon" aria-hidden="true"></span>
-                </button>
-                <div class="mobile-accordion__panel" id="@accordionId" role="region" aria-labelledby="acc-trigger-@menu.Id" hidden>
-                    @foreach (var item in menu.Links)
-                    {
-                        <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">@item.Title</a>
-                    }
+                var accordionId = "accordion-" + menu.Key;
+                var labelKey = LabelKey(menu.Key);
+                <div class="mobile-accordion" data-accordion>
+                    <button type="button"
+                            class="mobile-accordion__trigger"
+                            aria-expanded="false"
+                            aria-controls="@accordionId"
+                            id="acc-trigger-@menu.Key">
+                        <span data-i18n="@labelKey">@menu.Label</span>
+                        <span class="acc-icon" aria-hidden="true"></span>
+                    </button>
+                    <div class="mobile-accordion__panel" id="@accordionId" role="region" aria-labelledby="acc-trigger-@menu.Key" hidden>
+                        @foreach (var item in menu.Items)
+                        {
+                            <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">@item.Title</a>
+                        }
+                    </div>
                 </div>
-            </div>
+            }
+        }
+        else
+        {
+            @foreach (var menu in SiteNav.PrimaryMenus)
+            {
+                var accordionId = "accordion-" + menu.Id;
+                var labelKey = LabelKey(menu.Id);
+                <div class="mobile-accordion" data-accordion>
+                    <button type="button"
+                            class="mobile-accordion__trigger"
+                            aria-expanded="false"
+                            aria-controls="@accordionId"
+                            id="acc-trigger-@menu.Id">
+                        <span data-i18n="@labelKey">@menu.Label</span>
+                        <span class="acc-icon" aria-hidden="true"></span>
+                    </button>
+                    <div class="mobile-accordion__panel" id="@accordionId" role="region" aria-labelledby="acc-trigger-@menu.Id" hidden>
+                        @foreach (var item in menu.Links)
+                        {
+                            <a href="@item.Href" class="@(IsActive(item.Href) ? "is-on" : null)">@item.Title</a>
+                        }
+                    </div>
+                </div>
+            }
         }
     </nav>
 </aside>

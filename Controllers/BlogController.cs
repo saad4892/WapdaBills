@@ -16,8 +16,8 @@ public class BlogController : Controller
     [HttpGet("/guides")]
     public async Task<IActionResult> Index()
     {
-        ViewData["Title"] = "Electricity bill guides for Pakistan";
-        ViewData["Description"] = "Guides for reference numbers, the U and R code, DISCO coverage, and how to avoid fake WAPDA job fees.";
+        ViewData["Title"] = "Electricity Bill Guides Pakistan | WAPDA";
+        ViewData["Description"] = "Guides for reference numbers, U/R codes, DISCO coverage, and how to check a Pakistan electricity bill online.";
         ViewData["Keywords"] = "electricity bill guide, reference number, DISCO coverage, WAPDA jobs scam";
         var posts = await _db.BlogPosts
             .Where(post => post.IsPublished)
@@ -38,6 +38,11 @@ public class BlogController : Controller
         ViewData["Title"] = post.Title;
         ViewData["Description"] = string.IsNullOrWhiteSpace(post.MetaDescription) ? post.Excerpt : post.MetaDescription;
         ViewData["Keywords"] = post.MetaKeywords;
+        ViewBag.GuideFaqs = await _db.GuideFaqs
+            .AsNoTracking()
+            .Where(f => f.BlogPostId == post.Id)
+            .OrderBy(f => f.SortOrder)
+            .ToListAsync();
         return View(post);
     }
 }

@@ -1,0 +1,19 @@
+@model IReadOnlyList<WapdaBill.Models.Cms.DiscoEntity>
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>DISCOs</h1></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+<table class="admin-table">
+    <thead><tr><th>Code</th><th>Name</th><th>Slug</th><th>Published</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var d in Model)
+    {
+        <tr>
+            <td>@d.Code</td>
+            <td>@d.ShortName</td>
+            <td>/@d.PublicSlug</td>
+            <td>@(d.IsPublished ? "Yes" : "No")</td>
+            <td><a href="/admin/discos/edit/@d.Id">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

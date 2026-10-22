@@ -1,0 +1,27 @@
+@model WapdaBill.Models.Cms.DiscoEntity
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Edit @Model.ShortName</h1></section>
+<form class="admin-form" method="post" asp-antiforgery="true">
+    <label>Short name</label><input name="ShortName" value="@Model.ShortName" required />
+    <label>Full name</label><input name="FullName" value="@Model.FullName" required />
+    <label>Public slug</label><input name="PublicSlug" value="@Model.PublicSlug" required />
+    <label>Coverage</label><input name="Coverage" value="@Model.Coverage" />
+    <label>Intro HTML</label><textarea name="IntroHtml">@Model.IntroHtml</textarea>
+    <label>Body HTML</label><textarea name="BodyHtml" style="min-height:200px">@Model.BodyHtml</textarea>
+    <label>Meta title</label><input name="MetaTitle" value="@Model.MetaTitle" />
+    <label>Meta description</label><textarea name="MetaDescription">@Model.MetaDescription</textarea>
+    <label>Meta keywords</label><input name="MetaKeywords" value="@Model.MetaKeywords" />
+    <label>Color</label><input name="Color" value="@Model.Color" />
+    <label>External URL</label><input name="ExternalUrl" value="@Model.ExternalUrl" />
+    <label>Note</label><input name="Note" value="@Model.Note" />
+    <label>Logo media Id</label><input name="LogoMediaId" value="@Model.LogoMediaId" />
+    <label>Sort</label><input type="number" name="SortOrder" value="@Model.SortOrder" />
+    @if (User.IsInRole("Admin"))
+    {
+        <label>PITC slug (operational)</label><input name="PitcSlug" value="@Model.PitcSlug" />
+        <label><input type="checkbox" name="UsesPitc" value="true" @(Model.UsesPitc ? "checked" : null) /> Uses PITC</label>
+        <label>Regions JSON</label><input name="RegionsJson" value="@Model.RegionsJson" />
+    }
+    <label><input type="checkbox" name="IsPublished" value="true" @(Model.IsPublished ? "checked" : null) /> Published</label>
+    <p><button class="btn btn-gold" type="submit">Save DISCO</button></p>
+</form>

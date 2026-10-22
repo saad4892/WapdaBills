@@ -1,5 +1,5 @@
 ﻿@model LookupForm
-@using System.Text.Json
+@inject IConfiguration Config
 @{
     var selectedCompany = DiscoCatalog.Find(Model.Company);
     if (selectedCompany is not null)
@@ -9,27 +9,11 @@
             : selectedCompany.Regions[0];
     }
 
-    var faqLd = new
-    {
-        context = "https://schema.org",
-        type = "FAQPage",
-        mainEntity = SiteContent.HomeFaqs.Select(item => new
-        {
-            type = "Question",
-            name = item.Question,
-            acceptedAnswer = new
-            {
-                type = "Answer",
-                text = item.Answer
-            }
-        }).ToArray()
-    };
-    var faqJson = JsonSerializer.Serialize(faqLd, new JsonSerializerOptions
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    }).Replace("\"context\"", "\"@context\"", StringComparison.Ordinal)
-      .Replace("\"type\"", "\"@type\"", StringComparison.Ordinal);
+    var origin = SiteUrls.PublicOrigin(Config, Context.Request);
+    var orgJson = JsonLd.Serialize(JsonLd.Organization(origin));
+    var siteJson = JsonLd.Serialize(JsonLd.WebSite(origin));
+    var appJson = JsonLd.Serialize(JsonLd.WebApplication(origin));
+    var faqJson = JsonLd.Serialize(JsonLd.FaqPage(SiteContent.HomeFaqs));
 }
 
 <section class="hero-band on-dark" aria-labelledby="home-h1">
@@ -246,6 +230,15 @@
     </div>
 </dialog>
 
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(orgJson)
+@Html.Raw("</script>")
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(siteJson)
+@Html.Raw("</script>")
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(appJson)
+@Html.Raw("</script>")
 @Html.Raw("<script type=\"application/ld+json\">")
 @Html.Raw(faqJson)
 @Html.Raw("</script>")

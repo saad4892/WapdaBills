@@ -1,0 +1,19 @@
+@model IReadOnlyList<WapdaBill.Models.Cms.ContentPage>
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Pages</h1><p><a class="btn btn-gold" href="/admin/pages/edit">New page</a></p></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+<table class="admin-table">
+    <thead><tr><th>Slug</th><th>Title</th><th>Template</th><th>Published</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <td>/@p.Slug</td>
+            <td>@p.Title</td>
+            <td>@p.Template</td>
+            <td>@(p.IsPublished ? "Yes" : "No")</td>
+            <td><a href="/admin/pages/edit/@p.Id">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,44 +1,97 @@
+@inject CmsQuery Cms
+@{
+    var copy = await Cms.GetFooterCopyAsync() ?? new WapdaBill.Models.Cms.FooterCopy();
+    var columns = await Cms.GetFooterColumnsAsync();
+    var social = await Cms.GetSocialLinksAsync();
+    if (columns.Count == 0)
+    {
+        // Fallback during empty DB boot
+    }
+    var year = DateTime.UtcNow.Year;
+    var copyright = (copy.CopyrightTemplate ?? "© {year} WAPDA Bills. All rights reserved.").Replace("{year}", year.ToString());
+}
 <footer class="site-footer on-dark" role="contentinfo">
     <div class="site-footer__inner">
-        <div class="footer-brand-block">
-            <a class="brand brand--footer" href="/" title="Electricity Bill Checker Pakistan — home">
-                <span class="mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-                        <path fill="currentColor" d="M13 2 3.8 13.6h7.1L10 22l10.2-12.2h-7.2L13 2z"/>
-                    </svg>
-                </span>
-                <span>
-                    <strong data-i18n="footer.brand">Electricity Bill Checker Pakistan</strong>
-                    <small data-i18n="footer.brandTag">Free public utility helper for DISCO duplicate bills</small>
-                </span>
-            </a>
-            <p class="footer-mission" data-i18n="footer.mission">
-                A free public utility helper that helps consumers check publicly available duplicate electricity bills online across Pakistan’s distribution companies.
-            </p>
-            <p class="footer-disclaimer" data-i18n="footer.disclaimer">
-                Disclaimer: This website is a privately owned informational platform created to assist consumers in checking publicly available duplicate electricity bills online. This website is NOT affiliated with, endorsed by, or connected to WAPDA, NEPRA, or any Government Distribution Company (LESCO, MEPCO, IESCO, K-Electric, PESCO, FESCO, GEPCO, HESCO, SEPCO, QESCO). All brand logos and names belong to their respective official owners.
-            </p>
+        <div class="footer-top">
+            <div class="footer-brand-block">
+                <a class="brand brand--footer" href="/" title="Electricity Bill Checker Pakistan — home">
+                    <span class="mark" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                            <path fill="currentColor" d="M13 2 3.8 13.6h7.1L10 22l10.2-12.2h-7.2L13 2z"/>
+                        </svg>
+                    </span>
+                    <span>
+                        <strong data-i18n="footer.brand">@(string.IsNullOrWhiteSpace(copy.BrandName) ? "Electricity Bill Checker Pakistan" : copy.BrandName)</strong>
+                        <small data-i18n="footer.brandTag">@(string.IsNullOrWhiteSpace(copy.BrandTag) ? "Free public utility helper for DISCO duplicate bills" : copy.BrandTag)</small>
+                    </span>
+                </a>
+                <p class="footer-mission" data-i18n="footer.mission">
+                    @(string.IsNullOrWhiteSpace(copy.Mission) ? "A free public utility helper that helps consumers check publicly available duplicate electricity bills online across Pakistan’s distribution companies." : copy.Mission)
+                </p>
+            </div>
+
+            <div class="footer-social">
+                <p class="footer-social__label" data-i18n="footer.follow">Follow Us</p>
+                <ul class="footer-social__list">
+                    @foreach (var s in (social.Count > 0 ? social : SiteNav.SocialLinks.Select(x => new WapdaBill.Models.Cms.SocialLinkEntity { Platform = x.Id, Label = x.Label, Href = x.Href, IsVisible = true }).ToList()))
+                    {
+                        <li>
+                            <a href="@s.Href"
+                               target="_blank"
+                               rel="noopener noreferrer nofollow"
+                               aria-label="Follow WAPDA Bills on @s.Label">
+                                @switch (s.Platform)
+                                {
+                                    case "facebook":
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H9v3h2v7h3v-7h2.2l.8-3H14V9z"/></svg>
+                                        break;
+                                    case "instagram":
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm5 3.8A5.2 5.2 0 1 0 17.2 12 5.2 5.2 0 0 0 12 6.8zm0 8.4A3.2 3.2 0 1 1 15.2 12 3.2 3.2 0 0 1 12 15.2zM17.8 6.5a1.2 1.2 0 1 0 1.2 1.2 1.2 1.2 0 0 0-1.2-1.2z"/></svg>
+                                        break;
+                                    case "x":
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 4h4.2l4 5.5L16.8 4H20l-6.1 7.2L20.2 20h-4.2l-4.3-5.9L7.2 20H4l6.4-7.6L4 4z"/></svg>
+                                        break;
+                                    case "tiktok":
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14.5 3h3c.2 1.6 1.2 3 2.7 3.8v3.1c-1.2-.1-2.3-.5-3.2-1.2v6.5A5.8 5.8 0 1 1 11 9.5v3.1a2.7 2.7 0 1 0 2.7 2.7V3z"/></svg>
+                                        break;
+                                    case "pinterest":
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 3a9 9 0 0 0-3.3 17.4c-.1-.7-.2-1.8 0-2.6l1.2-5.1s-.3-.6-.3-1.5c0-1.4.8-2.4 1.8-2.4.9 0 1.3.6 1.3 1.4 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3.1-2.3 3.1-5.1 0-2.1-1.4-3.7-4-3.7-2.9 0-4.7 2.1-4.7 4.5 0 .8.2 1.4.6 1.9l.1.2-.2.9c0 .2-.3.3-.5.2-1.5-.6-2.2-2.3-2.2-4.1 0-3 2.5-6.6 7.5-6.6 4 0 6.6 2.9 6.6 6 0 4.1-2.3 7.1-5.7 7.1-1.1 0-2.2-.6-2.6-1.3l-.7 2.7c-.2.9-.8 2-1.3 2.7A9 9 0 1 0 12 3z"/></svg>
+                                        break;
+                                    default:
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 5 12 5 12 5s-6 0-7.7.3A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C6 19 12 19 12 19s6 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+                                        break;
+                                }
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
+
+        <p class="footer-disclaimer" data-i18n="footer.disclaimer">
+            @(string.IsNullOrWhiteSpace(copy.Disclaimer) ? "Disclaimer: This website is a privately owned informational platform." : copy.Disclaimer)
+        </p>
 
         <div class="footer-grid" data-footer-accordions>
             @{
                 var colIndex = 0;
-                var colKeys = new[] { "footer.col1", "footer.col2", "footer.col3", "footer.col4" };
+                var sourceColumns = columns.Count > 0
+                    ? columns.Select(c => (c.Title, Links: c.Links.Select(l => (l.Title, l.Href)).ToList())).ToList()
+                    : SiteNav.FooterColumns.Select(c => (c.Title, Links: c.Links.Select(l => (l.Title, l.Href)).ToList())).ToList();
             }
-            @foreach (var column in SiteNav.FooterColumns)
+            @foreach (var column in sourceColumns)
             {
                 colIndex++;
                 var panelId = "footer-panel-" + colIndex;
                 var triggerId = "footer-trigger-" + colIndex;
-                var titleKey = colKeys[colIndex - 1];
                 <nav class="footer-col" aria-label="@column.Title" data-footer-col>
-                    <p class="footer-col__title footer-col__title--desktop"><strong data-i18n="@titleKey">@column.Title</strong></p>
+                    <p class="footer-col__title footer-col__title--desktop"><strong>@column.Title</strong></p>
                     <button type="button"
                             class="footer-col__trigger"
                             id="@triggerId"
                             aria-expanded="false"
                             aria-controls="@panelId">
-                        <span data-i18n="@titleKey">@column.Title</span>
+                        <span>@column.Title</span>
                         <span class="footer-col__icon" aria-hidden="true"></span>
                     </button>
                     <div class="footer-col__panel" id="@panelId" role="region" aria-labelledby="@triggerId">
@@ -56,7 +109,7 @@
 
     <div class="footer-meta-bar">
         <div class="footer-meta">
-            <p>&copy; @DateTime.UtcNow.Year WAPDA Bills. <span data-i18n="footer.rights">All rights reserved.</span></p>
+            <p>@copyright</p>
             <nav class="footer-meta__links" aria-label="Quick links">
                 <a href="/faqs" data-i18n="footer.faqs">FAQs</a>
                 <a href="/resources" data-i18n="footer.resources">Resources</a>

@@ -30,10 +30,10 @@
         const panel = item.querySelector(".nav-panel");
         if (!trigger || !panel) return;
         trigger.setAttribute("aria-expanded", "true");
+        // Unhide and enable hit-testing immediately so leaf links work on first click.
         panel.hidden = false;
-        requestAnimationFrame(function () {
-            panel.classList.add("is-open");
-        });
+        panel.classList.add("is-open");
+        panel.style.pointerEvents = "auto";
     }
 
     function isDesktop() {
@@ -46,6 +46,7 @@
         if (!trigger || !panel) return;
 
         let hoverTimer = null;
+        const isLinkTrigger = trigger.tagName === "A";
 
         item.addEventListener("mouseenter", function () {
             if (!isDesktop()) return;
@@ -61,14 +62,22 @@
         });
 
         trigger.addEventListener("click", function (event) {
+            if (!isDesktop()) {
+                // Mobile uses the drawer accordion; desktop-only panels stay closed.
+                return;
+            }
+
+            // Hub link (e.g. Guides): allow native navigation; hover still opens the panel.
+            if (isLinkTrigger) {
+                return;
+            }
+
             event.preventDefault();
             const open = trigger.getAttribute("aria-expanded") === "true";
             if (open) {
                 closeDesktopMenus();
             } else {
                 openDesktopMenu(item);
-                const first = panel.querySelector("a");
-                if (first) first.focus();
             }
         });
 

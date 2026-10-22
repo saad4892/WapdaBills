@@ -1,0 +1,20 @@
+@model IReadOnlyList<WapdaBill.Models.Cms.HomepageSection>
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Homepage sections</h1></section>
+@foreach (var sec in Model)
+{
+    <h2>@sec.Key — @sec.Title</h2>
+    @foreach (var item in sec.Items.OrderBy(i => i.SortOrder))
+    {
+        <form class="admin-form" method="post" action="/admin/homepage/item" asp-antiforgery="true" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #D9E2F0">
+            <input type="hidden" name="id" value="@item.Id" />
+            <input type="hidden" name="homepageSectionId" value="@sec.Id" />
+            <label>Title</label><input name="title" value="@item.Title" />
+            <label>Body</label><textarea name="body">@item.Body</textarea>
+            <label>Href</label><input name="href" value="@item.Href" />
+            <label>Sort</label><input type="number" name="sortOrder" value="@item.SortOrder" />
+            <label><input type="checkbox" name="isVisible" value="true" @(item.IsVisible ? "checked" : null) /> Visible</label>
+            <p><button class="btn btn-gold" type="submit">Save item</button></p>
+        </form>
+    }
+}

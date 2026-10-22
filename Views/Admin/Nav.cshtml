@@ -1,0 +1,29 @@
+@model IReadOnlyList<WapdaBill.Models.Cms.NavMenu>
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Navigation menus</h1></section>
+@foreach (var menu in Model)
+{
+    <h2>@menu.Label <small>(@menu.Key)</small></h2>
+    <table class="admin-table">
+        <thead><tr><th>Title</th><th>Href</th><th>Sort</th><th>Visible</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var item in menu.Items.OrderBy(i => i.SortOrder))
+        {
+            <tr>
+                <td colspan="5">
+                    <form class="admin-form" method="post" action="/admin/nav/item" asp-antiforgery="true" style="display:grid;grid-template-columns:2fr 2fr 80px 80px auto;gap:8px;align-items:end">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <input type="hidden" name="navMenuId" value="@menu.Id" />
+                        <div><label>Title</label><input name="title" value="@item.Title" required /></div>
+                        <div><label>Href</label><input name="href" value="@item.Href" required /></div>
+                        <div><label>Sort</label><input name="sortOrder" type="number" value="@item.SortOrder" /></div>
+                        <div><label>On</label><input name="isVisible" type="checkbox" value="true" @(item.IsVisible ? "checked" : null) /></div>
+                        <button class="btn btn-gold" type="submit">Save</button>
+                        <input type="hidden" name="description" value="@item.Description" />
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

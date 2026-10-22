@@ -1,28 +1,56 @@
+@inject CmsQuery Cms
+@{
+    var sections = await Cms.GetHomeSectionsAsync();
+    var how = sections.FirstOrDefault(s => s.Key == "how-check");
+    var tools = sections.FirstOrDefault(s => s.Key == "tools");
+    var charges = sections.FirstOrDefault(s => s.Key == "charges");
+    var homeFaqs = await Cms.GetFaqsAsync("home");
+}
+
 <section class="service-band how-check" aria-labelledby="how-check-title">
     <div class="story-head">
-        <h2 id="how-check-title" data-i18n="home.howTitle">How to View &amp; Download Your Online Electricity Bill</h2>
+        <h2 id="how-check-title" data-i18n="home.howTitle">@(how?.Title ?? "How to View & Download Your Online Electricity Bill")</h2>
     </div>
     <ol class="steps steps-grid how-check__steps">
-        <li>
-            <span class="step-num" aria-hidden="true">1</span>
-            <strong data-i18n="home.how1Title">Locate your reference number</strong>
-            <span data-i18n="home.how1Body">Find the 14-digit reference number on your previous utility bill copy (top left).</span>
-        </li>
-        <li>
-            <span class="step-num" aria-hidden="true">2</span>
-            <strong data-i18n="home.how2Title">Select your DISCO</strong>
-            <span data-i18n="home.how2Body">Choose your electricity distribution company from the menu above.</span>
-        </li>
-        <li>
-            <span class="step-num" aria-hidden="true">3</span>
-            <strong data-i18n="home.how3Title">Enter and check</strong>
-            <span data-i18n="home.how3Body">Type your reference number or consumer ID into the input field and click Check Bill.</span>
-        </li>
-        <li>
-            <span class="step-num" aria-hidden="true">4</span>
-            <strong data-i18n="home.how4Title">View or print</strong>
-            <span data-i18n="home.how4Body">View, print, or save your official duplicate bill from the result page.</span>
-        </li>
+        @{
+            var howItems = how?.Items.Where(i => i.IsVisible).OrderBy(i => i.SortOrder).ToList();
+        }
+        @if (howItems is { Count: > 0 })
+        {
+            var n = 0;
+            foreach (var item in howItems)
+            {
+                n++;
+                <li>
+                    <span class="step-num" aria-hidden="true">@n</span>
+                    <strong>@item.Title</strong>
+                    <span>@item.Body</span>
+                </li>
+            }
+        }
+        else
+        {
+            <li>
+                <span class="step-num" aria-hidden="true">1</span>
+                <strong data-i18n="home.how1Title">Locate your reference number</strong>
+                <span data-i18n="home.how1Body">Find the 14-digit reference number on your previous utility bill copy (top left).</span>
+            </li>
+            <li>
+                <span class="step-num" aria-hidden="true">2</span>
+                <strong data-i18n="home.how2Title">Select your DISCO</strong>
+                <span data-i18n="home.how2Body">Choose your electricity distribution company from the menu above.</span>
+            </li>
+            <li>
+                <span class="step-num" aria-hidden="true">3</span>
+                <strong data-i18n="home.how3Title">Enter and check</strong>
+                <span data-i18n="home.how3Body">Type your reference number or consumer ID into the input field and click Check Bill.</span>
+            </li>
+            <li>
+                <span class="step-num" aria-hidden="true">4</span>
+                <strong data-i18n="home.how4Title">View or print</strong>
+                <span data-i18n="home.how4Body">View, print, or save your official duplicate bill from the result page.</span>
+            </li>
+        }
     </ol>
 </section>
 
@@ -30,54 +58,86 @@
 
 <section class="service-band tools-band" aria-labelledby="tools-title">
     <div class="story-head">
-        <h2 id="tools-title" data-i18n="home.toolsTitle">Electricity Tools &amp; Calculators</h2>
+        <h2 id="tools-title" data-i18n="home.toolsTitle">@(tools?.Title ?? "Electricity Tools & Calculators")</h2>
     </div>
     <div class="tool-grid">
-        <a class="tool-card" href="/bill-calculator">
-            <strong>Bill Estimator / Calculator</strong>
-            <span>Estimate your monthly bill from consumed units, then open the live duplicate for the exact payable amount.</span>
-        </a>
-        <a class="tool-card" href="/peak-hours-guide">
-            <strong>Peak Hours Timings Chart</strong>
-            <span>Peak vs off-peak timing guidance for time-of-use meters across Pakistan DISCOs.</span>
-        </a>
-        <a class="tool-card" href="/unit-rates-tariff">
-            <strong>Latest NEPRA Unit Rates (Tariff)</strong>
-            <span>Overview of electricity slab pricing. Always verify payable amounts on your official bill.</span>
-        </a>
+        @{
+            var toolItems = tools?.Items.Where(i => i.IsVisible).OrderBy(i => i.SortOrder).ToList();
+        }
+        @if (toolItems is { Count: > 0 })
+        {
+            foreach (var item in toolItems)
+            {
+                <a class="tool-card" href="@(item.Href ?? "#")">
+                    <strong>@item.Title</strong>
+                    <span>@item.Body</span>
+                </a>
+            }
+        }
+        else
+        {
+            <a class="tool-card" href="/bill-calculator">
+                <strong>Bill Estimator / Calculator</strong>
+                <span>Estimate your monthly bill from consumed units, then open the live duplicate for the exact payable amount.</span>
+            </a>
+            <a class="tool-card" href="/peak-hours-guide">
+                <strong>Peak Hours Timings Chart</strong>
+                <span>Peak vs off-peak timing guidance for time-of-use meters across Pakistan DISCOs.</span>
+            </a>
+            <a class="tool-card" href="/unit-rates-tariff">
+                <strong>Latest NEPRA Unit Rates (Tariff)</strong>
+                <span>Overview of electricity slab pricing. Always verify payable amounts on your official bill.</span>
+            </a>
+        }
     </div>
 </section>
 
 <section class="service-band charges-band" aria-labelledby="charges-title">
     <div class="story-head">
-        <h2 id="charges-title" data-i18n="home.chargesTitle">Understanding Your Electricity Bill Taxes &amp; Surcharges</h2>
+        <h2 id="charges-title" data-i18n="home.chargesTitle">@(charges?.Title ?? "Understanding Your Electricity Bill Taxes & Surcharges")</h2>
     </div>
-    <p class="section-lead" data-i18n="home.chargesLead">Pakistani utility bills often include more than energy charges. These common line items explain why the payable amount differs from a simple units × rate calculation.</p>
+    <p class="section-lead" data-i18n="home.chargesLead">@(charges?.Lead ?? "Pakistani utility bills often include more than energy charges. These common line items explain why the payable amount differs from a simple units × rate calculation.")</p>
     <div class="charge-grid">
-        <article class="charge-card">
-            <h3>Fuel Price Adjustment (FPA)</h3>
-            <p>A monthly adjustment that reflects changes in generation fuel costs, applied per unit as notified for the billing period.</p>
-        </article>
-        <article class="charge-card">
-            <h3>Neelum Jhelum Surcharge (NJ)</h3>
-            <p>A surcharge linked to the Neelum–Jhelum hydropower project, shown as a separate amount on many DISCO bills.</p>
-        </article>
-        <article class="charge-card">
-            <h3>Electricity Duty</h3>
-            <p>A provincial duty calculated on electricity consumption; the exact rate depends on your province and tariff category.</p>
-        </article>
-        <article class="charge-card">
-            <h3>TV Fee</h3>
-            <p>A fixed monthly television fee collected with electricity bills where applicable, separate from energy charges.</p>
-        </article>
-        <article class="charge-card">
-            <h3>GST / Sales Tax</h3>
-            <p>Federal or provincial sales tax applied on taxable components of the bill according to current tax rules.</p>
-        </article>
-        <article class="charge-card">
-            <h3>Quarter Tariff Adjustment (QTR)</h3>
-            <p>Periodic tariff true-ups that reconcile earlier provisional rates with NEPRA-determined adjustments for the quarter.</p>
-        </article>
+        @{
+            var chargeItems = charges?.Items.Where(i => i.IsVisible).OrderBy(i => i.SortOrder).ToList();
+        }
+        @if (chargeItems is { Count: > 0 })
+        {
+            foreach (var item in chargeItems)
+            {
+                <article class="charge-card">
+                    <h3>@item.Title</h3>
+                    <p>@item.Body</p>
+                </article>
+            }
+        }
+        else
+        {
+            <article class="charge-card">
+                <h3>Fuel Price Adjustment (FPA)</h3>
+                <p>A monthly adjustment that reflects changes in generation fuel costs, applied per unit as notified for the billing period.</p>
+            </article>
+            <article class="charge-card">
+                <h3>Neelum Jhelum Surcharge (NJ)</h3>
+                <p>A surcharge linked to the Neelum–Jhelum hydropower project, shown as a separate amount on many DISCO bills.</p>
+            </article>
+            <article class="charge-card">
+                <h3>Electricity Duty</h3>
+                <p>A provincial duty calculated on electricity consumption; the exact rate depends on your province and tariff category.</p>
+            </article>
+            <article class="charge-card">
+                <h3>TV Fee</h3>
+                <p>A fixed monthly television fee collected with electricity bills where applicable, separate from energy charges.</p>
+            </article>
+            <article class="charge-card">
+                <h3>GST / Sales Tax</h3>
+                <p>Federal or provincial sales tax applied on taxable components of the bill according to current tax rules.</p>
+            </article>
+            <article class="charge-card">
+                <h3>Quarter Tariff Adjustment (QTR)</h3>
+                <p>Periodic tariff true-ups that reconcile earlier provisional rates with NEPRA-determined adjustments for the quarter.</p>
+            </article>
+        }
     </div>
 </section>
 
@@ -91,8 +151,11 @@
     <div class="faq-list" data-faq-accordion>
         @{
             var faqIndex = 0;
+            var faqSource = homeFaqs.Count > 0
+                ? homeFaqs.Select(f => (f.Question, Answer: System.Text.RegularExpressions.Regex.Replace(f.AnswerHtml ?? "", "<.*?>", ""))).ToList()
+                : SiteContent.HomeFaqs.Select(f => (f.Question, Answer: f.Answer)).ToList();
         }
-        @foreach (var item in SiteContent.HomeFaqs)
+        @foreach (var item in faqSource)
         {
             faqIndex++;
             <details class="faq">

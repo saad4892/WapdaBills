@@ -1,5 +1,12 @@
 <section class="page-intro legal-page">
-    @await Html.PartialAsync("_LegalHeader", ("About Us", "Legal & policy"))
+    @await Html.PartialAsync("_LegalHeader", ((string)(ViewBag.CmsH1 ?? "About Us"), "Legal & policy"))
 </section>
-@await Html.PartialAsync("_LegalSections", LegalContent.About)
+@if (ViewBag.CmsBodyHtml is string body && !string.IsNullOrWhiteSpace(body))
+{
+    <div class="legal-prose">@Html.Raw(body)</div>
+}
+else
+{
+    @await Html.PartialAsync("_LegalSections", ViewBag.LegalFallback as IReadOnlyList<LegalSection> ?? LegalContent.About)
+}
 @await Html.PartialAsync("_LegalNav")

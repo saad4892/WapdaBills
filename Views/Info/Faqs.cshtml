@@ -1,9 +1,20 @@
 @model IReadOnlyList<FaqItem>
+@inject IConfiguration Config
+@{
+    var origin = SiteUrls.PublicOrigin(Config, Context.Request);
+    var faqJson = JsonLd.Serialize(JsonLd.FaqPage(Model));
+    var crumbs = new List<(string Name, string Path)>
+    {
+        ("Home", "/"),
+        ("FAQs", "/faqs")
+    };
+    var breadcrumbJson = JsonLd.Serialize(JsonLd.BreadcrumbList(origin, crumbs));
+}
 
 <section class="page-intro">
     <p class="eyebrow">FAQs</p>
     <h1>Frequently asked questions</h1>
-    <p>Short answers before you search a reference number.</p>
+    <p>Short answers before you search a reference number. Ready to look up a bill? Open the <a href="/">electricity bill checker</a>.</p>
 </section>
 
 <div class="faq-list">
@@ -11,9 +22,16 @@
     {
         <details class="faq">
             <summary>
-                <h3 class="faq-q">@item.Question</h3>
+                <h2 class="faq-q">@item.Question</h2>
             </summary>
             <p>@item.Answer</p>
         </details>
     }
 </div>
+
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(faqJson)
+@Html.Raw("</script>")
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(breadcrumbJson)
+@Html.Raw("</script>")

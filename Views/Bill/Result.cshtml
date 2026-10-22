@@ -1,6 +1,8 @@
 @model BillFetchResult
 @{
-    ViewData["Title"] = $"{Model.Company?.ShortName} bill";
+    ViewData["Title"] = $"{Model.Company?.ShortName} duplicate bill result";
+    ViewData["Description"] = $"Private duplicate bill result for {Model.Company?.ShortName}. This page is not indexed.";
+    ViewData["Robots"] = "noindex, nofollow";
     var within = string.IsNullOrWhiteSpace(Model.Summary.PayableWithin) ? "—" : "Rs " + Model.Summary.PayableWithin;
     var after = string.IsNullOrWhiteSpace(Model.Summary.PayableAfter) ? "—" : "Rs " + Model.Summary.PayableAfter;
     var code = Model.RuUsed == "R" ? "R" : "U";

@@ -1,3 +1,4 @@
+@inject IConfiguration Config
 @{
     var link = (NavLink)ViewData["NavLink"]!;
     var hub = (RegionalHub)ViewData["Hub"]!;
@@ -5,15 +6,29 @@
     var cities = (IReadOnlyList<RegionCityLink>)ViewData["Cities"]!;
     var checkerUrl = (string)ViewData["CheckerUrl"]!;
     var related = ViewData["RelatedRegions"] as NavLink[] ?? Array.Empty<NavLink>();
+    var origin = SiteUrls.PublicOrigin(Config, Context.Request);
+    var crumbs = new List<(string Name, string Path)>
+    {
+        ("Home", "/"),
+        (hub.H1, link.Href)
+    };
+    var breadcrumbJson = JsonLd.Serialize(JsonLd.BreadcrumbList(origin, crumbs));
 }
 
 <article class="region-hub">
     <section class="page-intro region-hub__hero" aria-labelledby="region-h1">
         <p class="eyebrow">Regional electricity bills</p>
         <h1 id="region-h1">@hub.H1</h1>
-        @foreach (var paragraph in hub.IntroParagraphs)
+        @if (ViewBag.CmsIntroHtml is string introHtml && !string.IsNullOrWhiteSpace(introHtml))
         {
-            <p>@paragraph</p>
+            @Html.Raw(introHtml)
+        }
+        else
+        {
+            @foreach (var paragraph in hub.IntroParagraphs)
+            {
+                <p>@paragraph</p>
+            }
         }
         <div class="actions">
             @if (!string.IsNullOrWhiteSpace(hub.RegionKey))
@@ -123,3 +138,7 @@
         </section>
     }
 </article>
+
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(breadcrumbJson)
+@Html.Raw("</script>")

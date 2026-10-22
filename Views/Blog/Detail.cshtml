@@ -1,15 +1,82 @@
 @model BlogPost
+@inject IConfiguration Config
+@{
+    var origin = SiteUrls.PublicOrigin(Config, Context.Request);
+    ViewData["OgType"] = "article";
+    if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+    {
+        ViewData["OgImage"] = Model.ImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? Model.ImagePath
+            : origin + Model.ImagePath;
+    }
+
+    var crumbs = new List<(string Name, string Path)>
+    {
+        ("Home", "/"),
+        ("Guides", "/guides"),
+        (Model.Title, "/guides/" + Model.Slug)
+    };
+    var breadcrumbJson = JsonLd.Serialize(JsonLd.BreadcrumbList(origin, crumbs));
+    var articleJson = JsonLd.Serialize(JsonLd.BlogPosting(origin, Model));
+}
 
 <article class="article">
     <p class="eyebrow">Guide</p>
     <h1>@Model.Title</h1>
-    <p class="result-meta">@Model.PublishedAt.ToString("d MMMM yyyy")</p>
+    <p class="result-meta">
+        Published @Model.PublishedAt.ToString("d MMMM yyyy")
+        @if (Model.UpdatedAt.Date > Model.PublishedAt.Date)
+        {
+            <span> · Last updated @Model.UpdatedAt.ToString("d MMMM yyyy")</span>
+        }
+        else
+        {
+            <span> · Last updated @Model.UpdatedAt.ToString("d MMMM yyyy")</span>
+        }
+    </p>
     @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
     {
-        <img class="article-cover" src="@Model.ImagePath" alt="" />
+        <img class="article-cover"
+             src="@Model.ImagePath"
+             alt="@Model.Title"
+             width="760"
+             height="420"
+             loading="lazy"
+             decoding="async" />
     }
     <div class="article-body">
         @Html.Raw(PlainText.ToHtml(Model.Body))
     </div>
+    @{
+        var guideFaqs = ViewBag.GuideFaqs as IReadOnlyList<WapdaBill.Models.Cms.GuideFaq>;
+    }
+    @if (guideFaqs is { Count: > 0 })
+    {
+        <section class="guide-faqs" aria-labelledby="guide-faq-title">
+            <h2 id="guide-faq-title">Frequently asked questions</h2>
+            <div class="faq-list">
+                @foreach (var faq in guideFaqs)
+                {
+                    <details class="faq">
+                        <summary><h3 class="faq-q">@faq.Question</h3></summary>
+                        <div>@Html.Raw(faq.AnswerHtml)</div>
+                    </details>
+                }
+            </div>
+        </section>
+    }
+    <p class="section-lead">
+        Need the live bill? Use the
+        <a href="/">electricity bill checker</a>
+        or read
+        <a href="/how-to-check-bill">how to find your reference number</a>.
+    </p>
     <p><a class="back" href="/guides">All guides</a></p>
 </article>
+
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(breadcrumbJson)
+@Html.Raw("</script>")
+@Html.Raw("<script type=\"application/ld+json\">")
+@Html.Raw(articleJson)
+@Html.Raw("</script>")

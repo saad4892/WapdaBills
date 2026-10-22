@@ -1,0 +1,17 @@
+{
+  "name": "WAPDA Bills",
+  "short_name": "WAPDA Bills",
+  "description": "Check electricity bills online for every Pakistan DISCO.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B2A5B",
+  "theme_color": "#0B2A5B",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

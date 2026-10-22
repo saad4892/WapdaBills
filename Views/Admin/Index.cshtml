@@ -2,11 +2,18 @@
     ViewData["Title"] = "Admin";
 }
 
+@await Html.PartialAsync("_CmsNav")
+
 <section class="page-intro">
     <p class="eyebrow">Admin</p>
     <h1>Content desk</h1>
-    <p>Publish guides and the search description that appears on the home page.</p>
+    <p>Manage site content, media, navigation, and SEO. Public design stays server-rendered.</p>
 </section>
+
+@if (TempData["Ok"] is string ok)
+{
+    <p class="admin-flash ok">@ok</p>
+}
 
 <div class="card-grid">
     <a class="story-card" href="/admin/guides">
@@ -14,9 +21,39 @@
         <strong>Guides</strong>
         <span>Write and publish bill articles.</span>
     </a>
-    <a class="story-card" href="/admin/seo">
-        <span class="pill">Home page</span>
-        <strong>Search listing</strong>
-        <span>Edit the title, description, and keywords.</span>
+    <a class="story-card" href="/admin/pages">
+        <span class="pill">@ViewBag.Pages pages</span>
+        <strong>Pages</strong>
+        <span>Legal, tools, and informational pages.</span>
+    </a>
+    <a class="story-card" href="/admin/discos">
+        <span class="pill">@ViewBag.Discos companies</span>
+        <strong>DISCOs</strong>
+        <span>Company landings and marketing copy.</span>
+    </a>
+    <a class="story-card" href="/admin/homepage">
+        <span class="pill">Home</span>
+        <strong>Homepage</strong>
+        <span>Hero, cards, FAQs, and sections.</span>
+    </a>
+    <a class="story-card" href="/admin/media">
+        <span class="pill">@ViewBag.Media files</span>
+        <strong>Media</strong>
+        <span>Upload and manage images.</span>
+    </a>
+    <a class="story-card" href="/admin/settings">
+        <span class="pill">Settings</span>
+        <strong>Site settings</strong>
+        <span>Name, default SEO, analytics IDs.</span>
+    </a>
+    <a class="story-card" href="/admin/redirects">
+        <span class="pill">@ViewBag.Redirects rules</span>
+        <strong>Redirects &amp; 404s</strong>
+        <span>301/302 rules and not-found log.</span>
+    </a>
+    <a class="story-card" href="/admin/export">
+        <span class="pill">JSON</span>
+        <strong>Export / Import</strong>
+        <span>Backup content metadata.</span>
     </a>
 </div>

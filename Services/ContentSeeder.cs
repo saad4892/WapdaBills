@@ -12,8 +12,9 @@ public static class ContentSeeder
             db.SiteSettings.Add(new SiteSetting
             {
                 Id = 1,
-                SiteTitle = "Pakistan Electricity Bills | LESCO, MEPCO, FESCO and every DISCO",
-                MetaDescription = "Check a duplicate electricity bill for LESCO, MEPCO, FESCO, GEPCO, IESCO, PESCO, HAZECO, HESCO, SEPCO, QESCO and TESCO. One reference-number lookup for every WAPDA distribution company in Pakistan.",
+                SiteName = "WAPDA Bills",
+                SiteTitle = "Check Electricity Bill Online Pakistan | WAPDA",
+                MetaDescription = "Check free live duplicate electricity bills online for LESCO, MEPCO, IESCO, K-Electric, FESCO, PESCO, GEPCO, HESCO, SEPCO and QESCO in Pakistan.",
                 MetaKeywords = "Pakistan electricity bill, LESCO bill online, MEPCO duplicate bill, FESCO bill check, IESCO bill, GEPCO bill, PESCO bill, HESCO bill, SEPCO bill, QESCO bill, TESCO bill, HAZECO bill, WAPDA reference number, K-Electric"
             });
         }

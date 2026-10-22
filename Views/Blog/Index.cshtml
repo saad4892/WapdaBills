@@ -15,7 +15,12 @@
         <a class="story-card" href="/guides/@post.Slug">
             @if (!string.IsNullOrWhiteSpace(post.ImagePath))
             {
-                <img src="@post.ImagePath" alt="" />
+                <img src="@post.ImagePath"
+                     alt="@post.Title"
+                     width="400"
+                     height="220"
+                     loading="lazy"
+                     decoding="async" />
             }
             <span class="pill">@post.PublishedAt.ToString("d MMM yyyy")</span>
             <strong>@post.Title</strong>

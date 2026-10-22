@@ -1,0 +1,28 @@
+@await Html.PartialAsync("_CmsNav")
+@{
+    var copy = (WapdaBill.Models.Cms.FooterCopy)ViewBag.Copy;
+    var social = (IReadOnlyList<WapdaBill.Models.Cms.SocialLinkEntity>)ViewBag.Social;
+}
+<section class="page-intro"><h1>Footer</h1></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+<form class="admin-form" method="post" action="/admin/footer/copy" asp-antiforgery="true">
+    <label>Brand name</label><input name="BrandName" value="@copy.BrandName" />
+    <label>Brand tag</label><input name="BrandTag" value="@copy.BrandTag" />
+    <label>Mission</label><textarea name="Mission">@copy.Mission</textarea>
+    <label>Disclaimer</label><textarea name="Disclaimer">@copy.Disclaimer</textarea>
+    <label>Copyright template (use {year})</label><input name="CopyrightTemplate" value="@copy.CopyrightTemplate" />
+    <p><button class="btn btn-gold" type="submit">Save footer copy</button></p>
+</form>
+<h2>Social links</h2>
+@foreach (var s in social)
+{
+    <form class="admin-form" method="post" action="/admin/footer/social" asp-antiforgery="true" style="margin-bottom:12px;border-bottom:1px solid #D9E2F0;padding-bottom:12px">
+        <input type="hidden" name="id" value="@s.Id" />
+        <label>Platform</label><input name="platform" value="@s.Platform" />
+        <label>Label</label><input name="label" value="@s.Label" />
+        <label>URL</label><input name="href" value="@s.Href" />
+        <label>Sort</label><input type="number" name="sortOrder" value="@s.SortOrder" />
+        <label><input type="checkbox" name="isVisible" value="true" @(s.IsVisible ? "checked" : null) /> Visible</label>
+        <p><button class="btn btn-gold" type="submit">Save</button></p>
+    </form>
+}

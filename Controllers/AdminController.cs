@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WapdaBill.Data;
 using WapdaBill.Models;
+using WapdaBill.Models.Cms;
 using WapdaBill.Services;
 
 namespace WapdaBill.Controllers;
@@ -20,19 +21,25 @@ public class AdminController : Controller
     private readonly IWebHostEnvironment _env;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AdminController> _logger;
+    private readonly AdminAuthService _auth;
+    private readonly CmsQuery _cms;
 
     public AdminController(
         AppDbContext db,
         IConfiguration config,
         IWebHostEnvironment env,
         IHttpClientFactory httpClientFactory,
-        ILogger<AdminController> logger)
+        ILogger<AdminController> logger,
+        AdminAuthService auth,
+        CmsQuery cms)
     {
         _db = db;
         _config = config;
         _env = env;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _auth = auth;
+        _cms = cms;
     }
 
     [HttpGet("/admin")]
@@ -40,6 +47,10 @@ public class AdminController : Controller
     {
         ViewData["Title"] = "Admin";
         ViewBag.Guides = await _db.BlogPosts.CountAsync();
+        ViewBag.Pages = await _db.ContentPages.CountAsync();
+        ViewBag.Discos = await _db.Discos.CountAsync();
+        ViewBag.Media = await _db.MediaAssets.CountAsync();
+        ViewBag.Redirects = await _db.RedirectRules.CountAsync();
         return View();
     }
 
@@ -62,22 +73,15 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string username, string password, string? returnUrl)
     {
-        var expectedUser = _config["Admin:Username"] ?? "";
-        var expectedPassword = _config["Admin:Password"] ?? "";
-        var userOk = string.Equals(username?.Trim(), expectedUser, StringComparison.Ordinal);
-        var passwordOk = string.Equals(password, expectedPassword, StringComparison.Ordinal);
-        if (!userOk || !passwordOk || expectedPassword.Length == 0)
+        var (ok, error) = await _auth.TrySignInAsync(HttpContext, username, password);
+        if (!ok)
         {
             ViewData["Title"] = "Admin login";
-            ViewData["Error"] = "Those details do not match.";
+            ViewData["Error"] = error ?? "Those details do not match.";
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
-        var identity = new ClaimsIdentity(
-            [new Claim(ClaimTypes.Name, expectedUser)],
-            CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignInAsync(new ClaimsPrincipal(identity));
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
             return Redirect(returnUrl);
@@ -224,16 +228,31 @@ public class AdminController : Controller
         ViewData["Title"] = id is null ? "New guide" : "Edit guide";
         if (id is null)
         {
+            ViewBag.GuideFaqs = new List<GuideFaq>();
+            ViewBag.MediaAssets = await _db.MediaAssets.OrderByDescending(m => m.CreatedAt).Take(40).ToListAsync();
             return View(new BlogPost { IsPublished = true });
         }
 
         var post = await _db.BlogPosts.FindAsync(id);
-        return post is null ? NotFound() : View(post);
+        if (post is null)
+        {
+            return NotFound();
+        }
+
+        ViewBag.GuideFaqs = await _db.GuideFaqs.Where(f => f.BlogPostId == post.Id).OrderBy(f => f.SortOrder).ToListAsync();
+        ViewBag.MediaAssets = await _db.MediaAssets.OrderByDescending(m => m.CreatedAt).Take(40).ToListAsync();
+        return View(post);
     }
 
     [HttpPost("/admin/guides/edit/{id:int?}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditGuide(int? id, BlogPost input, IFormFile? cover, bool removeImage)
+    public async Task<IActionResult> EditGuide(
+        int? id,
+        BlogPost input,
+        IFormFile? cover,
+        bool removeImage,
+        string[]? faqQuestion,
+        string[]? faqAnswer)
     {
         input.Title = input.Title.Trim();
         input.Excerpt = input.Excerpt.Trim();
@@ -261,6 +280,8 @@ public class AdminController : Controller
         if (!ModelState.IsValid)
         {
             ViewData["Title"] = input.Id == 0 ? "New guide" : "Edit guide";
+            ViewBag.GuideFaqs = BuildFaqPreview(faqQuestion, faqAnswer);
+            ViewBag.MediaAssets = await _db.MediaAssets.OrderByDescending(m => m.CreatedAt).Take(40).ToListAsync();
             return View(input);
         }
 
@@ -295,7 +316,44 @@ public class AdminController : Controller
 
         post.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+
+        var existingFaqs = await _db.GuideFaqs.Where(f => f.BlogPostId == post.Id).ToListAsync();
+        _db.GuideFaqs.RemoveRange(existingFaqs);
+        var faqs = BuildFaqPreview(faqQuestion, faqAnswer);
+        foreach (var faq in faqs)
+        {
+            faq.BlogPostId = post.Id;
+            _db.GuideFaqs.Add(faq);
+        }
+
+        await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Guides));
+    }
+
+    private static List<GuideFaq> BuildFaqPreview(string[]? questions, string[]? answers)
+    {
+        var list = new List<GuideFaq>();
+        var q = questions ?? [];
+        var a = answers ?? [];
+        var n = Math.Max(q.Length, a.Length);
+        for (var i = 0; i < n; i++)
+        {
+            var question = i < q.Length ? (q[i] ?? "").Trim() : "";
+            var answer = i < a.Length ? (a[i] ?? "").Trim() : "";
+            if (question.Length == 0 && answer.Length == 0)
+            {
+                continue;
+            }
+
+            list.Add(new GuideFaq
+            {
+                Question = question,
+                AnswerHtml = HtmlSanitize.Clean(answer),
+                SortOrder = list.Count
+            });
+        }
+
+        return list;
     }
 
     [HttpPost("/admin/guides/delete/{id:int}")]
@@ -348,6 +406,7 @@ public class AdminController : Controller
         }
 
         await _db.SaveChangesAsync();
+        _cms.Invalidate();
         TempData["Saved"] = "Search listing saved.";
         return RedirectToAction(nameof(Seo));
     }

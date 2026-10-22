@@ -1,0 +1,27 @@
+@model SiteSetting
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Site settings</h1></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+<form class="admin-form" method="post" asp-antiforgery="true">
+    <label>Site name</label>
+    <input name="SiteName" value="@Model.SiteName" required />
+    <label>Default SEO title</label>
+    <input name="SiteTitle" value="@Model.SiteTitle" required maxlength="70" />
+    <label>Default meta description</label>
+    <textarea name="MetaDescription" maxlength="180">@Model.MetaDescription</textarea>
+    <label>Meta keywords</label>
+    <input name="MetaKeywords" value="@Model.MetaKeywords" />
+    <label>Logo media Id</label>
+    <input name="LogoMediaId" value="@Model.LogoMediaId" />
+    <label>Favicon media Id</label>
+    <input name="FaviconMediaId" value="@Model.FaviconMediaId" />
+    <label>Default OG image media Id</label>
+    <input name="DefaultOgImageMediaId" value="@Model.DefaultOgImageMediaId" />
+    <label>Google Search Console verification</label>
+    <input name="GoogleSearchConsoleVerification" value="@Model.GoogleSearchConsoleVerification" maxlength="120" />
+    <label>GA4 Measurement ID (G-XXXX)</label>
+    <input name="Ga4MeasurementId" value="@Model.Ga4MeasurementId" />
+    <label>GTM Container ID (GTM-XXXX)</label>
+    <input name="GtmContainerId" value="@Model.GtmContainerId" />
+    <p style="margin-top:16px"><button class="btn btn-gold" type="submit">Save settings</button></p>
+</form>

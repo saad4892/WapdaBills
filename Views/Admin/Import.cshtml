@@ -1,0 +1,12 @@
+@await Html.PartialAsync("_CmsNav")
+<section class="page-intro"><h1>Import JSON</h1>
+<p>Upload a previous export. Back up <code>App_Data</code> and <code>wwwroot/media</code> first. Current import upserts content pages only.</p></section>
+@if (TempData["Ok"] is string ok) { <p class="admin-flash ok">@ok</p> }
+@if (TempData["Error"] is string err) { <p class="admin-flash err">@err</p> }
+<p><a class="btn btn-ghost" href="/admin/export">Download export first</a></p>
+<form class="admin-form" method="post" enctype="multipart/form-data" asp-antiforgery="true">
+    <label>JSON file</label>
+    <input type="file" name="file" accept="application/json,.json" required />
+    <label><input type="checkbox" name="confirm" value="true" /> I confirmed a backup and want to import</label>
+    <p><button class="btn btn-gold" type="submit">Import</button></p>
+</form>
